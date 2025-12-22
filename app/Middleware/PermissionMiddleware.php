@@ -12,6 +12,10 @@ class PermissionMiddleware
             redirect('/login');
         }
 
+        if (Auth::isSuperAdmin()) {
+            return;
+        }
+
         if ($permissionKey === '') {
             http_response_code(400);
             echo 'Yetki anahtarı bulunamadı.';

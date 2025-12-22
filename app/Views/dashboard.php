@@ -13,7 +13,13 @@
 <body>
 <div class="container">
     <h2>Dashboard</h2>
-    <p>Hoş geldiniz, <?php echo htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?> / Firma: <?php echo htmlspecialchars($user['company_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+    <p>Hoş geldiniz, <?php echo htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?> /
+        Firma: <?php echo htmlspecialchars($user['company_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+    <?php if (!empty($user['is_super_admin'])): ?>
+        <p style="color:#0d6efd;"><strong>Super Admin</strong> olarak giriş yaptınız. <a href="/super-admin/companies">Firma yönetimine git</a>.</p>
+    <?php else: ?>
+        <p><a href="/users/create">Kullanıcı oluştur</a> sayfasından paket limitine tabi kullanıcı ekleyebilirsiniz.</p>
+    <?php endif; ?>
     <form method="POST" action="/logout">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
         <button type="submit">Çıkış</button>
