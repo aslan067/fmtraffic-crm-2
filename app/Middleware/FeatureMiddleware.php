@@ -7,12 +7,7 @@ use App\Services\FeatureService;
 
 class FeatureMiddleware
 {
-    private FeatureService $featureService;
-
-    public function __construct()
-    {
-        $this->featureService = new FeatureService();
-    }
+    private ?FeatureService $featureService = null;
 
     public function handle(string $featureKey): void
     {
@@ -32,6 +27,15 @@ class FeatureMiddleware
             exit;
         }
 
-        $this->featureService->abortIfNoFeature((int) $companyId, $featureKey);
+        $this->featureService()->abortIfNoFeature((int) $companyId, $featureKey);
+    }
+
+    private function featureService(): FeatureService
+    {
+        if (!$this->featureService instanceof FeatureService) {
+            $this->featureService = new FeatureService();
+        }
+
+        return $this->featureService;
     }
 }

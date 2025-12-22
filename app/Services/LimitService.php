@@ -7,20 +7,15 @@ use App\Models\User;
 
 class LimitService
 {
-    private SubscriptionService $subscriptionService;
-
-    public function __construct()
-    {
-        $this->subscriptionService = new SubscriptionService();
-    }
+    private ?SubscriptionService $subscriptionService = null;
 
     public function canAddUser(int $companyId): bool
     {
-        if (!$this->subscriptionService->isSubscriptionActive($companyId)) {
+        if (!$this->subscriptionService()->isSubscriptionActive($companyId)) {
             return false;
         }
 
-        $package = $this->subscriptionService->getPackageLimits($companyId);
+        $package = $this->subscriptionService()->getPackageLimits($companyId);
 
         if (!$package) {
             return false;
@@ -49,11 +44,11 @@ class LimitService
 
     private function checkLimit(int $companyId, string $table, string $limitKey): bool
     {
-        if (!$this->subscriptionService->isSubscriptionActive($companyId)) {
+        if (!$this->subscriptionService()->isSubscriptionActive($companyId)) {
             return false;
         }
 
-        $package = $this->subscriptionService->getPackageLimits($companyId);
+        $package = $this->subscriptionService()->getPackageLimits($companyId);
 
         if (!$package) {
             return false;
@@ -68,6 +63,15 @@ class LimitService
         $currentCount = $this->countByTable($table, $companyId);
 
         return $currentCount < $maxAllowed;
+    }
+
+    private function subscriptionService(): SubscriptionService
+    {
+        if (!$this->subscriptionService instanceof SubscriptionService) {
+            $this->subscriptionService = new SubscriptionService();
+        }
+
+        return $this->subscriptionService;
     }
 
     private function countByTable(string $table, int $companyId): int

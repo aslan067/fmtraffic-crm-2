@@ -3,29 +3,47 @@
 
 declare(strict_types=1);
 
-session_start();
+// 1) error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
-// Simple autoloader for App namespace
+// 2) autoload
 spl_autoload_register(function ($class) {
-    $prefix = 'App\\';
-    $baseDir = __DIR__ . '/../app/';
+    $baseDir = dirname(__DIR__) . '/';
+    $file = $baseDir . str_replace('\\', '/', $class) . '.php';
 
-    if (strncmp($prefix, $class, strlen($prefix)) !== 0) {
+    if (file_exists($file)) {
+        require_once $file;
         return;
     }
 
-    $relativeClass = substr($class, strlen($prefix));
-    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-
-    if (file_exists($file)) {
-        require $file;
+    if (str_starts_with($class, 'App\\')) {
+        $relative = substr($class, strlen('App\\'));
+        $appFile = $baseDir . 'app/' . str_replace('\\', '/', $relative) . '.php';
+        if (file_exists($appFile)) {
+            require_once $appFile;
+        }
     }
 });
 
-require_once __DIR__ . '/../config/app.php';
-require_once __DIR__ . '/../config/routes.php';
+// shared helpers
+require_once dirname(__DIR__) . '/app/helpers.php';
 
+// 3) config yükleme
+loadEnv(dirname(__DIR__) . '/.env');
+$config = require dirname(__DIR__) . '/config/app.php';
+ini_set('display_errors', ($config['debug'] ?? true) ? '1' : '0');
+
+// 4) core class'ları yükleme
+use App\Core\Auth;
 use App\Core\Router;
 
+Auth::startSession();
+
+// 5) Auth nesnesi oluşturma
+$auth = new Auth();
+
+// 6) Router başlatma ve dispatch
+$routes = require dirname(__DIR__) . '/config/routes.php';
 $router = new Router($routes);
 $router->dispatch();

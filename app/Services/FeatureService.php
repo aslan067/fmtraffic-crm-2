@@ -7,12 +7,7 @@ use App\Core\DB;
 
 class FeatureService
 {
-    private SubscriptionService $subscriptionService;
-
-    public function __construct()
-    {
-        $this->subscriptionService = new SubscriptionService();
-    }
+    private ?SubscriptionService $subscriptionService = null;
 
     public function companyHasFeature(int $companyId, string $featureKey): bool
     {
@@ -26,7 +21,7 @@ class FeatureService
             return true;
         }
 
-        $subscription = $this->subscriptionService->getActiveSubscription($companyId);
+        $subscription = $this->subscriptionService()->getActiveSubscription($companyId);
 
         if (!$subscription) {
             return false;
@@ -60,5 +55,14 @@ class FeatureService
     private function allowBySuperAdmin(): bool
     {
         return Auth::isSuperAdmin();
+    }
+
+    private function subscriptionService(): SubscriptionService
+    {
+        if (!$this->subscriptionService instanceof SubscriptionService) {
+            $this->subscriptionService = new SubscriptionService();
+        }
+
+        return $this->subscriptionService;
     }
 }
