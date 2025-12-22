@@ -12,6 +12,12 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - `config`: Uygulama ve route tanımları
 - `database/migrations.sql`: Şema ve seed SQL
 
+## Limit Enforcement vs Feature Enforcement
+- **Limit enforcement** (LimitService): Aktif abonelik ve paket limitlerine göre *nicelik* kontrolleri yapar. Örn. kullanıcı/ürün/cari ekleme sınırı.
+- **Feature enforcement** (FeatureService + FeatureMiddleware): Paketin belirli modülleri (product, cari, offer, sale, purchase, stock) içerip içermediğini kontrol eder. “Yetki var ama paket yok” durumunu engeller.
+
+> Bir işlemin yapılabilmesi için **yetki + paket + feature** koşullarının tamamı sağlanmalıdır.
+
 ## Kurulum
 1. Depoyu klonlayın ve dizine girin.
 2. `.env.example` dosyasını `.env` olarak kopyalayın ve MySQL bilgilerinizi doldurun:
@@ -45,7 +51,7 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 - `POST /login`: Kimlik doğrulama ve session oluşturma
 - `GET /dashboard`: Oturum gerektirir
 - `POST /logout`: Oturum sonlandırma (CSRF korumalı)
-- `GET /products`: Oturum + `permission:product.view` kontrolü ile korunur
+- `GET /products`: Oturum + `permission:product.view` + `feature:product` kontrolü ile korunur
 - `GET /users/create` & `POST /users`: Paket limitine tabi kullanıcı oluşturma
 - `GET /super-admin/companies`: Super Admin firma yönetimi
 - `POST /super-admin/companies`: Super Admin firma oluşturma + paket başlatma

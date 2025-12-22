@@ -3,6 +3,7 @@
 namespace App\Core;
 
 use App\Middleware\PermissionMiddleware;
+use App\Middleware\FeatureMiddleware;
 
 class Router
 {
@@ -30,6 +31,14 @@ class Router
                         $middleware = new PermissionMiddleware();
                         if (method_exists($middleware, 'handle')) {
                             $middleware->handle($permissionKey);
+                        }
+                        continue;
+                    }
+                    if (is_string($middlewareClass) && str_starts_with($middlewareClass, 'feature:')) {
+                        $featureKey = substr($middlewareClass, strlen('feature:'));
+                        $middleware = new FeatureMiddleware();
+                        if (method_exists($middleware, 'handle')) {
+                            $middleware->handle($featureKey);
                         }
                         continue;
                     }
