@@ -2,6 +2,11 @@
 
 Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir CRM çekirdeği örneğidir. Framework kullanılmaz, yalnızca düz PHP + MySQL 8 ve PDO tercih edilir.
 
+## Bootstrap & Path Standardı
+- `BASE_PATH`, projenin fiziksel konumunu dinamik olarak temsil eder ve `public/index.php` içinde `define('BASE_PATH', realpath(__DIR__))` ile tanımlanır.
+- Autoload ve tüm dosya erişimleri `BASE_PATH` üzerinden kurulduğu için proje **public_html**, **public_html/crm2** veya farklı bir sunucu altında aynı şekilde çalışır.
+- `config/app.php` yalnızca konfigürasyon array'i döndürür; sınıf başlatmaz veya servis çağırmaz. Index sıralaması: hata raporlama → `BASE_PATH` → autoload → `config/app.php` yükleme → `Auth` oturum/nesne → `Router` dispatch.
+
 ## Klasör Yapısı
 - `public/index.php`: Front controller ve router tetikleyici
 - `app/Core`: Router, Auth ve DB çekirdeği
