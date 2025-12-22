@@ -33,12 +33,14 @@ class Auth
                 return false;
             }
 
-            $company = Company::findById((int) $user['company_id']);
+            $companyId = $user['company_id'] !== null ? (int) $user['company_id'] : null;
+            $company = $companyId ? Company::findById($companyId) : null;
 
             $_SESSION['user_id'] = (int) $user['id'];
-            $_SESSION['company_id'] = (int) $user['company_id'];
+            $_SESSION['company_id'] = $companyId;
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['company_name'] = $company['name'] ?? '';
+            $_SESSION['is_super_admin'] = (bool) $user['is_super_admin'];
 
             return true;
         } catch (Throwable $e) {
@@ -59,7 +61,15 @@ class Auth
 
     public static function check(): bool
     {
-        return isset($_SESSION['user_id'], $_SESSION['company_id']);
+        if (!isset($_SESSION['user_id'])) {
+            return false;
+        }
+
+        if (!empty($_SESSION['is_super_admin'])) {
+            return true;
+        }
+
+        return array_key_exists('company_id', $_SESSION) && $_SESSION['company_id'] !== null;
     }
 
     public static function user(): ?array
@@ -70,14 +80,19 @@ class Auth
 
         return [
             'id' => (int) $_SESSION['user_id'],
-            'company_id' => (int) $_SESSION['company_id'],
+            'company_id' => $_SESSION['company_id'] !== null ? (int) $_SESSION['company_id'] : null,
             'name' => (string) ($_SESSION['user_name'] ?? ''),
             'company_name' => (string) ($_SESSION['company_name'] ?? ''),
+            'is_super_admin' => (bool) ($_SESSION['is_super_admin'] ?? false),
         ];
     }
 
     public static function hasRole(string $roleName): bool
     {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
         if (!self::check()) {
             return false;
         }
@@ -98,6 +113,10 @@ class Auth
 
     public static function hasPermission(string $permissionKey): bool
     {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
         if (!self::check()) {
             return false;
         }
@@ -106,5 +125,10 @@ class Auth
         $companyId = (int) $_SESSION['company_id'];
 
         return Permission::userHasPermission($userId, $companyId, $permissionKey);
+    }
+
+    public static function isSuperAdmin(): bool
+    {
+        return !empty($_SESSION['is_super_admin']);
     }
 }

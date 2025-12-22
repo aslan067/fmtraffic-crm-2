@@ -16,4 +16,24 @@ class Company
 
         return $company ?: null;
     }
+
+    public static function all(): array
+    {
+        $pdo = DB::getConnection();
+        $stmt = $pdo->query('SELECT id, name, status, created_at FROM companies ORDER BY id ASC');
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function create(string $name): int
+    {
+        $pdo = DB::getConnection();
+        $stmt = $pdo->prepare('INSERT INTO companies (name, status) VALUES (:name, :status)');
+        $stmt->execute([
+            ':name' => $name,
+            ':status' => 'active',
+        ]);
+
+        return (int) $pdo->lastInsertId();
+    }
 }

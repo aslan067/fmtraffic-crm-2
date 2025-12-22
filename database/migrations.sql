@@ -8,20 +8,24 @@ CREATE TABLE IF NOT EXISTS companies (
 
 CREATE TABLE IF NOT EXISTS users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    company_id INT UNSIGNED NOT NULL,
+    company_id INT UNSIGNED NULL,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    is_super_admin TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed data
 INSERT INTO companies (name, status) VALUES ('Örnek Firma', 'active');
 
-INSERT INTO users (company_id, name, email, password_hash, status)
-VALUES (1, 'Admin Kullanıcı', 'admin@example.com', '$2y$12$shAHXMfWk.w5fQvk4CQ.UOOujQZPFGvITdys.KVamWjfs923wPQzK', 'active');
+INSERT INTO users (company_id, name, email, password_hash, status, is_super_admin)
+VALUES (1, 'Admin Kullanıcı', 'admin@example.com', '$2y$12$shAHXMfWk.w5fQvk4CQ.UOOujQZPFGvITdys.KVamWjfs923wPQzK', 'active', 0);
+
+INSERT INTO users (company_id, name, email, password_hash, status, is_super_admin)
+VALUES (NULL, 'Super Admin', 'superadmin@example.com', '$2y$12$Xh43DJXNBMzBK00dsr7mxOwyJxBh5pbC.cQGALpSavrX5CBQNpEj2', 'active', 1);
 
 CREATE TABLE IF NOT EXISTS roles (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -71,6 +75,24 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     ends_at DATETIME NOT NULL,
     CONSTRAINT fk_subscriptions_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
     CONSTRAINT fk_subscriptions_package FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS products (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    company_id INT UNSIGNED NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_products_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS caris (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    company_id INT UNSIGNED NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_caris_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed roles
