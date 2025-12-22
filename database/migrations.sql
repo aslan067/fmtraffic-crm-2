@@ -66,6 +66,13 @@ CREATE TABLE IF NOT EXISTS packages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS package_features (
+    package_id INT UNSIGNED NOT NULL,
+    feature_key VARCHAR(100) NOT NULL,
+    PRIMARY KEY (package_id, feature_key),
+    CONSTRAINT fk_package_features_package FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS subscriptions (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,
@@ -115,6 +122,26 @@ INSERT INTO packages (name, max_users, max_products, max_caris) VALUES
 ('Starter', 5, 100, 50),
 ('Pro', 25, 1000, 500),
 ('Premium', 100, 5000, 2000);
+
+-- Seed package features
+INSERT INTO package_features (package_id, feature_key)
+SELECT p.id, pf.feature_key
+FROM packages p
+JOIN (
+    SELECT 'Starter' AS package_name, 'product' AS feature_key UNION ALL
+    SELECT 'Starter', 'cari' UNION ALL
+    SELECT 'Pro', 'product' UNION ALL
+    SELECT 'Pro', 'cari' UNION ALL
+    SELECT 'Pro', 'offer' UNION ALL
+    SELECT 'Pro', 'sale' UNION ALL
+    SELECT 'Premium', 'product' UNION ALL
+    SELECT 'Premium', 'cari' UNION ALL
+    SELECT 'Premium', 'offer' UNION ALL
+    SELECT 'Premium', 'sale' UNION ALL
+    SELECT 'Premium', 'purchase' UNION ALL
+    SELECT 'Premium', 'stock'
+) AS pf ON p.name = pf.package_name
+ON DUPLICATE KEY UPDATE feature_key = VALUES(feature_key);
 
 -- Example role-permission mapping
 INSERT INTO role_permissions (role_id, permission_id)
