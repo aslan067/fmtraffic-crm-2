@@ -12,6 +12,12 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - `config`: Uygulama ve route tanımları
 - `database/migrations.sql`: Şema ve seed SQL
 
+## Bootstrap ve Giriş Noktası
+- `public/index.php` tek giriş noktasıdır; uygulamanın tamamı buradan bootstrap edilir.
+- Bootstrap adımları sırasıyla: hata raporlama, minimal autoload, `.env` yükleme, `config/app.php` okuma, çekirdek sınıfları hazır hale getirme, `Auth` oturum başlatma/nesne oluşturma, `Router` başlatma ve dispatch.
+- `config/app.php` yalnızca yapılandırma değerleri döndürür; class instantiate veya servis çalıştırma içermez.
+- Autoload kuralları App\\ namespace'ini otomatik olarak `app/` dizinine eşler, manuel `require` ihtiyacını azaltır.
+
 ## Limit Enforcement vs Feature Enforcement
 - **Limit enforcement** (LimitService): Aktif abonelik ve paket limitlerine göre *nicelik* kontrolleri yapar. Örn. kullanıcı/ürün/cari ekleme sınırı.
 - **Feature enforcement** (FeatureService + FeatureMiddleware): Paketin belirli modülleri (product, cari, offer, sale, purchase, stock) içerip içermediğini kontrol eder. “Yetki var ama paket yok” durumunu engeller.

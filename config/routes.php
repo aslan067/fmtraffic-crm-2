@@ -11,7 +11,7 @@ use App\Middleware\AuthMiddleware;
 use App\Middleware\SuperAdminMiddleware;
 use App\Middleware\FeatureMiddleware;
 
-$routes = [
+return [
     ['method' => 'GET', 'path' => '/login', 'handler' => [AuthController::class, 'showLogin'], 'middleware' => []],
     ['method' => 'POST', 'path' => '/login', 'handler' => [AuthController::class, 'login'], 'middleware' => []],
     ['method' => 'POST', 'path' => '/logout', 'handler' => [AuthController::class, 'logout'], 'middleware' => [AuthMiddleware::class]],
