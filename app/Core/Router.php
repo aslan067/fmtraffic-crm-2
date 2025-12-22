@@ -21,13 +21,16 @@ class Router
         $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
         foreach ($this->routes as $route) {
-            if ($route['method'] !== $method || $route['path'] !== $uri) {
+            if ($route['method'] !== $method) {
                 continue;
             }
 
-            $this->runMiddleware($route['middleware'] ?? []);
-            $this->runHandler($route['handler']);
-            return;
+            $params = [];
+            if ($this->uriMatches($route['path'], $uri, $params)) {
+                $this->runMiddleware($route['middleware'] ?? []);
+                $this->runHandler($route['handler'], $params);
+                return;
+            }
         }
 
         http_response_code(404);
@@ -76,7 +79,7 @@ class Router
     /**
      * @param array{0: class-string, 1: string} $handler
      */
-    private function runHandler(array $handler): void
+    private function runHandler(array $handler, array $params = []): void
     {
         [$controllerClass, $action] = $handler;
 
@@ -87,7 +90,7 @@ class Router
         }
 
         $controller = new $controllerClass();
-        $controller->$action();
+        $controller->$action(...$params);
     }
 
     private function ensureClassAvailable(string $className): void
@@ -109,5 +112,45 @@ class Router
 
         echo $message;
         exit;
+    }
+
+    private function uriMatches(string $routePath, string $uri, array &$params): bool
+    {
+        if ($routePath === $uri) {
+            $params = [];
+            return true;
+        }
+
+        if (!str_contains($routePath, '{')) {
+            return false;
+        }
+
+        $paramNames = [];
+        $pattern = $this->convertPathToPattern($routePath, $paramNames);
+
+        if (!preg_match($pattern, $uri, $matches)) {
+            return false;
+        }
+
+        $params = [];
+        foreach ($paramNames as $name) {
+            $params[] = $matches[$name] ?? null;
+        }
+
+        return true;
+    }
+
+    private function convertPathToPattern(string $routePath, array &$paramNames): string
+    {
+        $pattern = preg_replace_callback(
+            '/\{([^\/]+)\}/',
+            function (array $matches) use (&$paramNames) {
+                $paramNames[] = $matches[1];
+                return '(?P<' . $matches[1] . '>[^/]+)';
+            },
+            $routePath
+        );
+
+        return '#^' . $pattern . '$#';
     }
 }

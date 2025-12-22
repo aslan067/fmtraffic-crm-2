@@ -57,12 +57,24 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 
 > Güvenlik için bu şifreyi giriş yaptıktan sonra mutlaka değiştirin.
 
+## Cari Yönetimi (MVP)
+- Tablolar:
+  - `caris`: `type (customer|supplier|both)`, `name`, `tax_office`, `tax_number`, `status (active|passive)`, `company_id`
+  - `contacts`: Cari bazlı iletişim kişileri
+- Feature & permission: `feature:cari` + `permission:cari.view|cari.create|cari.edit` zorunludur.
+- Limit kontrolü: `LimitService::canAddCari(company_id)` çağrısı `store` öncesinde yapılır; limit doluysa ekleme yapılmaz.
+- CRUD kapsamı: Listeleme, oluşturma, düzenleme, pasife alma (silme yok).
+- Rotalar: `/caris`, `/caris/create`, `/caris/store`, `/caris/{id}/edit`, `/caris/{id}/update`, `/caris/{id}/deactivate`
+
 ## Route Özeti
 - `GET /login`: Giriş formu
 - `POST /login`: Kimlik doğrulama ve session oluşturma
 - `GET /dashboard`: Oturum gerektirir
 - `POST /logout`: Oturum sonlandırma (CSRF korumalı)
 - `GET /products`: Oturum + `permission:product.view` + `feature:product` kontrolü ile korunur
+- `GET /caris`: Oturum + `feature:cari` + `permission:cari.view`
+- `GET /caris/create` & `POST /caris/store`: Oturum + `feature:cari` + `permission:cari.create`
+- `GET /caris/{id}/edit` & `POST /caris/{id}/update` & `POST /caris/{id}/deactivate`: Oturum + `feature:cari` + `permission:cari.edit`
 - `GET /users/create` & `POST /users`: Paket limitine tabi kullanıcı oluşturma
 - `GET /super-admin/companies`: Super Admin firma yönetimi
 - `POST /super-admin/companies`: Super Admin firma oluşturma + paket başlatma
@@ -97,8 +109,14 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 - Kullanıcı eklemeden önce `LimitService::canAddUser($companyId)` çağrılır; limit doluysa ekleme yapılmaz ve “Paket kullanıcı limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir.
 
 ## Hata Yönetimi
-- Veritabanı bağlantı hataları kullanıcıya basit mesaj, loglara detay verir.
-- Auth akışında başarısız girişler için basit flash mesajı ve yönlendirme yapılır.
+- Login akışında aşağıdaki durumlar ayrı ayrı yakalanır ve flash mesajı ile kullanıcıya aktarılır:
+  - Veritabanı bağlantısı kurulamıyor → “Sistem geçici olarak kullanılamıyor (DB bağlantısı yok).”
+  - Kullanıcı bulunamadı
+  - Şifre yanlış
+  - Kullanıcı pasif
+  - Beklenmeyen sistem hatası (loglanır, kullanıcıya sade mesaj gösterilir)
+- CSRF hataları hem login hem CRUD formlarında yakalanır ve kullanıcıya net mesaj gösterilir.
+- DB bağlantı hataları artık fatal çıkış yerine yakalanabilir exception üretir; login ekranında kırmızı uyarı olarak gösterilir.
 
 ## Geliştirme Notları
 - PHP 8.1 ile uyumludur.

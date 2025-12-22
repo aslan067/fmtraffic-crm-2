@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Core\Exceptions\AuthException;
+use App\Core\Exceptions\DatabaseConnectionException;
 use Throwable;
 
 class Auth
@@ -26,11 +28,15 @@ class Auth
             $user = User::findByEmail($email);
 
             if (!$user) {
-                return false;
+                throw new AuthException('user_not_found', 'Kullanıcı bulunamadı.');
             }
 
             if (!password_verify($password, $user['password_hash'])) {
-                return false;
+                throw new AuthException('invalid_password', 'Şifre yanlış.');
+            }
+
+            if (($user['status'] ?? '') !== 'active') {
+                throw new AuthException('user_inactive', 'Kullanıcı pasif. Lütfen yöneticinizle iletişime geçin.');
             }
 
             $companyId = $user['company_id'] !== null ? (int) $user['company_id'] : null;
@@ -43,9 +49,24 @@ class Auth
             $_SESSION['is_super_admin'] = (bool) $user['is_super_admin'];
 
             return true;
+        } catch (DatabaseConnectionException $e) {
+            error_log('Database connection error during authentication: ' . $e->getMessage());
+            throw new AuthException(
+                'db_connection',
+                'Sistem geçici olarak kullanılamıyor (DB bağlantısı yok).',
+                0,
+                $e
+            );
+        } catch (AuthException $e) {
+            throw $e;
         } catch (Throwable $e) {
             error_log('Auth error: ' . $e->getMessage());
-            return false;
+            throw new AuthException(
+                'system_error',
+                'Beklenmeyen bir sistem hatası oluştu. Lütfen tekrar deneyin.',
+                0,
+                $e
+            );
         }
     }
 

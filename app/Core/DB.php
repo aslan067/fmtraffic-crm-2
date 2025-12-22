@@ -4,6 +4,7 @@ namespace App\Core;
 
 use PDO;
 use PDOException;
+use App\Core\Exceptions\DatabaseConnectionException;
 
 class DB
 {
@@ -33,9 +34,11 @@ class DB
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $e) {
-            http_response_code(500);
-            echo 'Database connection failed: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
-            exit;
+            throw new DatabaseConnectionException(
+                'Database connection failed: ' . $e->getMessage(),
+                (int) $e->getCode(),
+                $e
+            );
         }
 
         return self::$connection;

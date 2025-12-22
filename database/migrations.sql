@@ -96,10 +96,23 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS caris (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,
+    type ENUM('customer', 'supplier', 'both') NOT NULL DEFAULT 'customer',
     name VARCHAR(255) NOT NULL,
-    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    tax_office VARCHAR(255) NULL,
+    tax_number VARCHAR(50) NULL,
+    status ENUM('active', 'passive') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_caris_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS contacts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    cari_id INT UNSIGNED NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NULL,
+    phone VARCHAR(50) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_contacts_cari FOREIGN KEY (cari_id) REFERENCES caris(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed roles
@@ -115,7 +128,11 @@ INSERT INTO permissions (`key`, description) VALUES
 ('product.view', 'Ürünleri görüntüleme'),
 ('product.create', 'Ürün oluşturma'),
 ('sale.view', 'Satışları görüntüleme'),
-('sale.create', 'Satış oluşturma');
+('sale.create', 'Satış oluşturma'),
+('cari.view', 'Carileri görüntüleme'),
+('cari.create', 'Cari oluşturma'),
+('cari.edit', 'Cari düzenleme')
+ON DUPLICATE KEY UPDATE description = VALUES(description);
 
 -- Seed packages
 INSERT INTO packages (name, max_users, max_products, max_caris) VALUES
