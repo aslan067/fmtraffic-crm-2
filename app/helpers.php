@@ -62,3 +62,45 @@ function verify_csrf_token(?string $token): bool
 {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], (string) $token);
 }
+
+/**
+ * Flash message helpers.
+ */
+function setFlash(string $key, string $message): void
+{
+    if (!isset($_SESSION['flash']) || !is_array($_SESSION['flash'])) {
+        $_SESSION['flash'] = [];
+    }
+
+    $_SESSION['flash'][$key] = $message;
+}
+
+/**
+ * @return array<string, string>|string|null
+ */
+function getFlash(?string $key = null)
+{
+    if (!isset($_SESSION['flash']) || !is_array($_SESSION['flash'])) {
+        return $key === null ? [] : null;
+    }
+
+    if ($key !== null) {
+        if (!array_key_exists($key, $_SESSION['flash'])) {
+            return null;
+        }
+
+        $message = $_SESSION['flash'][$key];
+        unset($_SESSION['flash'][$key]);
+
+        if ($_SESSION['flash'] === []) {
+            unset($_SESSION['flash']);
+        }
+
+        return $message;
+    }
+
+    $messages = $_SESSION['flash'];
+    unset($_SESSION['flash']);
+
+    return $messages;
+}

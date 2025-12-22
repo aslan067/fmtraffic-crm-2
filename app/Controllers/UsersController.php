@@ -17,7 +17,7 @@ class UsersController
 
     public function create(): void
     {
-        $flash = $this->pullFlash();
+        $flash = getFlash();
         view('users/create', ['flash' => $flash]);
     }
 
@@ -25,7 +25,7 @@ class UsersController
     {
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
-            $this->setFlash('error', 'Geçersiz oturum doğrulaması.');
+            setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/users/create');
         }
 
@@ -33,12 +33,12 @@ class UsersController
         $companyId = $currentUser['company_id'] ?? null;
 
         if ($companyId === null) {
-            $this->setFlash('error', 'Super Admin kullanıcı eklemek için bir firma bağlamı seçmelidir.');
+            setFlash('error', 'Super Admin kullanıcı eklemek için bir firma bağlamı seçmelidir.');
             redirect('/users/create');
         }
 
         if (!$this->limitService->canAddUser((int) $companyId)) {
-            $this->setFlash('error', 'Paket kullanıcı limitiniz dolmuştur. Paket yükseltiniz.');
+            setFlash('error', 'Paket kullanıcı limitiniz dolmuştur. Paket yükseltiniz.');
             redirect('/users/create');
         }
 
@@ -47,7 +47,7 @@ class UsersController
         $password = (string) ($_POST['password'] ?? '');
 
         if ($name === '' || $email === '' || $password === '') {
-            $this->setFlash('error', 'Ad, e-posta ve şifre gereklidir.');
+            setFlash('error', 'Ad, e-posta ve şifre gereklidir.');
             redirect('/users/create');
         }
 
@@ -62,20 +62,7 @@ class UsersController
             'is_super_admin' => 0,
         ]);
 
-        $this->setFlash('success', 'Kullanıcı başarıyla oluşturuldu.');
+        setFlash('success', 'Kullanıcı başarıyla oluşturuldu.');
         redirect('/users/create');
-    }
-
-    private function setFlash(string $key, string $message): void
-    {
-        $_SESSION['flash'][$key] = $message;
-    }
-
-    private function pullFlash(): array
-    {
-        $flash = $_SESSION['flash'] ?? [];
-        unset($_SESSION['flash']);
-
-        return $flash;
     }
 }

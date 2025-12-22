@@ -12,10 +12,10 @@ class AuthController
             redirect('/dashboard');
         }
 
-        $error = $_SESSION['error'] ?? null;
-        unset($_SESSION['error']);
+        $error = getFlash('error');
+        $success = getFlash('success');
 
-        view('login', ['error' => $error]);
+        view('login', ['error' => $error, 'success' => $success]);
     }
 
     public function login(): void
@@ -25,19 +25,23 @@ class AuthController
         $token = $_POST['csrf_token'] ?? '';
 
         if (!verify_csrf_token($token)) {
-            $_SESSION['error'] = 'Geçersiz oturum doğrulaması. Lütfen tekrar deneyin.';
+            setFlash('error', 'Geçersiz oturum doğrulaması. Lütfen tekrar deneyin.');
             redirect('/login');
         }
 
         if ($email === '' || $password === '') {
-            $_SESSION['error'] = 'E-posta ve şifre gereklidir.';
+            setFlash('error', 'E-posta ve şifre gereklidir.');
             redirect('/login');
         }
 
-        $authenticated = Auth::attempt($email, $password);
-
-        if (!$authenticated) {
-            $_SESSION['error'] = 'Giriş başarısız. Bilgilerinizi kontrol edin.';
+        try {
+            Auth::attempt($email, $password);
+        } catch (\App\Core\Exceptions\AuthException $e) {
+            setFlash('error', $e->getMessage());
+            redirect('/login');
+        } catch (\Throwable $e) {
+            error_log('Login unexpected error: ' . $e->getMessage());
+            setFlash('error', 'Beklenmeyen sistem hatası. Lütfen tekrar deneyin.');
             redirect('/login');
         }
 
@@ -48,11 +52,12 @@ class AuthController
     {
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
-            $_SESSION['error'] = 'Geçersiz oturum doğrulaması.';
+            setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/dashboard');
         }
 
         Auth::logout();
+        setFlash('success', 'Oturum başarıyla kapatıldı.');
         redirect('/login');
     }
 }
