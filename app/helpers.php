@@ -31,7 +31,7 @@ function loadEnv(string $path): void
 function view(string $template, array $data = []): void
 {
     extract($data, EXTR_OVERWRITE);
-    require __DIR__ . '/Views/' . $template . '.php';
+    require BASE_PATH . '/app/Views/' . $template . '.php';
 }
 
 /**
