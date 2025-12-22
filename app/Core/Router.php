@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+use App\Middleware\PermissionMiddleware;
+
 class Router
 {
     private array $routes = [];
@@ -23,9 +25,20 @@ class Router
 
             if (!empty($route['middleware'])) {
                 foreach ($route['middleware'] as $middlewareClass) {
-                    $middleware = new $middlewareClass();
-                    if (method_exists($middleware, 'handle')) {
-                        $middleware->handle();
+                    if (is_string($middlewareClass) && str_starts_with($middlewareClass, 'permission:')) {
+                        $permissionKey = substr($middlewareClass, strlen('permission:'));
+                        $middleware = new PermissionMiddleware();
+                        if (method_exists($middleware, 'handle')) {
+                            $middleware->handle($permissionKey);
+                        }
+                        continue;
+                    }
+
+                    if (is_string($middlewareClass) && class_exists($middlewareClass)) {
+                        $middleware = new $middlewareClass();
+                        if (method_exists($middleware, 'handle')) {
+                            $middleware->handle();
+                        }
                     }
                 }
             }

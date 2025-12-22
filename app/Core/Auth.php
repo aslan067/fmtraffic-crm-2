@@ -4,6 +4,8 @@ namespace App\Core;
 
 use App\Models\User;
 use App\Models\Company;
+use App\Models\Permission;
+use App\Models\Role;
 use Throwable;
 
 class Auth
@@ -72,5 +74,37 @@ class Auth
             'name' => (string) ($_SESSION['user_name'] ?? ''),
             'company_name' => (string) ($_SESSION['company_name'] ?? ''),
         ];
+    }
+
+    public static function hasRole(string $roleName): bool
+    {
+        if (!self::check()) {
+            return false;
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $companyId = (int) $_SESSION['company_id'];
+
+        $roles = Role::getRolesForUser($userId, $companyId);
+
+        foreach ($roles as $role) {
+            if (strcasecmp($role['name'], $roleName) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function hasPermission(string $permissionKey): bool
+    {
+        if (!self::check()) {
+            return false;
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $companyId = (int) $_SESSION['company_id'];
+
+        return Permission::userHasPermission($userId, $companyId, $permissionKey);
     }
 }

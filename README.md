@@ -41,12 +41,28 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `POST /login`: Kimlik doğrulama ve session oluşturma
 - `GET /dashboard`: Oturum gerektirir
 - `POST /logout`: Oturum sonlandırma (CSRF korumalı)
+- `GET /products`: Oturum + `permission:product.view` kontrolü ile korunur
 
 ## Güvenlik Notları
 - PDO + prepared statements kullanılır.
 - CSRF token kontrolü, `csrf_token()` helperı ile yapılır.
 - Çıktılar `htmlspecialchars` ile escape edilir.
 - Tüm iş tablolarında `company_id` zorunludur.
+
+## Rol & Yetki Mantığı
+- Roller sistem genelinde (`company_id` NULL) veya firmaya özel (`company_id` dolu) olabilir.
+- Kullanıcı-rolleri `user_roles`, rol-yetkileri `role_permissions` üzerinden bağlanır.
+- Yetkiler `permissions.key` (ör. `product.view`) değerleri ile kontrol edilir.
+- `App\Core\Auth` içinde:
+  - `hasRole($roleName)`: Kullanıcının rolünü doğrular.
+  - `hasPermission($permissionKey)`: Rol-permission ilişkisi üzerinden yetki kontrolü yapar.
+- Middleware kullanımı: `permission:<key>` formatı ile route tanımına eklenir. Örnek: `/products` rotası `permission:product.view` ister.
+
+## Paket ve Abonelik Yapısı
+- Paketler (`packages`) tüm sistem için tanımlanır; kullanıcı sınırı, ürün ve cari limitleri içerir.
+- Abonelikler (`subscriptions`) firma + paket ilişkisini ve durumunu (trial/active/suspended/expired) tutar.
+- Örnek Starter/Pro/Premium paketleri ve deneme aboneliği seed olarak eklenmiştir.
+- Bu aşamada paket limitleri sadece altyapıdır, enforcement sonraki adımda.
 
 ## Hata Yönetimi
 - Veritabanı bağlantı hataları kullanıcıya basit mesaj, loglara detay verir.
