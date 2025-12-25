@@ -96,6 +96,11 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 - `Auth::isSuperAdmin()`: Sistem sahibini temsil eder; tüm yetkilere sahiptir ve company_id olmadan çalışır.
 - Middleware kullanımı: `permission:<key>` formatı ile route tanımına eklenir. Örnek: `/products` rotası `permission:product.view` ister.
 
+## Dinamik Menü & Yetki Senkronizasyonu
+- Dashboard/menü tarafında öğeler, kullanıcının rol yetkilerine ve paket feature’larına göre gösterilir; yetkisi veya feature’ı olmayan öğeler UI’da gizlenir.
+- UI gizleme yalnızca UX içindir; gerçek güvenlik backend middleware katmanında (AuthMiddleware + FeatureMiddleware) sağlanır.
+- Zincir: Auth -> (FeatureService ile paket feature kontrolü) + (Permission kontrolü) → Menüde gösterme/ gizleme kararını verir.
+
 ## Super Admin vs Firma Admin
 - **Super Admin**: Sistemin sahibidir, herhangi bir `company_id`'ye bağlı değildir. Tüm firmaları görür, firma oluşturur, paket atar, abonelik başlatır veya askıya alır. `/super-admin/*` rotalarına erişebilir.
 - **Firma Admin**: Kendi `company_id` kapsamındaki kaynaklara erişir. Paket limitlerine tabidir ve yeni kullanıcı eklerken LimitService kontrolleri devreye girer.
