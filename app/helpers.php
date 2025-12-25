@@ -104,3 +104,27 @@ function getFlash(?string $key = null)
 
     return $messages;
 }
+
+/**
+ * View helper: check permission.
+ */
+function can(string $permission): bool
+{
+    return \App\Core\Auth::can($permission);
+}
+
+/**
+ * View helper: check feature availability.
+ */
+function feature(string $feature): bool
+{
+    return \App\Core\Auth::hasFeature($feature);
+}
+
+/**
+ * View helper: feature + permission chain.
+ */
+function canAccess(string $feature, string $permission): bool
+{
+    return \App\Core\Auth::canAccess($feature, $permission);
+}

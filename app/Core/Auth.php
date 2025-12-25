@@ -6,12 +6,15 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Services\FeatureService;
 use App\Core\Exceptions\AuthException;
 use App\Core\Exceptions\DatabaseConnectionException;
 use Throwable;
 
 class Auth
 {
+    private static ?FeatureService $featureService = null;
+
     public static function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -148,8 +151,46 @@ class Auth
         return Permission::userHasPermission($userId, $companyId, $permissionKey);
     }
 
+    public static function can(string $permissionKey): bool
+    {
+        return self::hasPermission($permissionKey);
+    }
+
+    public static function hasFeature(string $featureKey): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        if (!self::check()) {
+            return false;
+        }
+
+        $companyId = (int) $_SESSION['company_id'];
+
+        return self::featureService()->companyHasFeature($companyId, $featureKey);
+    }
+
+    public static function canAccess(string $featureKey, string $permissionKey): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        return self::hasFeature($featureKey) && self::can($permissionKey);
+    }
+
     public static function isSuperAdmin(): bool
     {
         return !empty($_SESSION['is_super_admin']);
+    }
+
+    private static function featureService(): FeatureService
+    {
+        if (!self::$featureService instanceof FeatureService) {
+            self::$featureService = new FeatureService();
+        }
+
+        return self::$featureService;
     }
 }
