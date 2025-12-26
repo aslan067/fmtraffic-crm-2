@@ -9,13 +9,18 @@ class SuperAdminMiddleware
     public function handle(): void
     {
         if (!Auth::check()) {
-            redirect('/login');
+            $this->denyAccess();
         }
 
         if (!Auth::isSuperAdmin()) {
-            http_response_code(403);
-            echo 'Bu sayfaya yalnızca Super Admin erişebilir.';
-            exit;
+            $this->denyAccess();
         }
+    }
+
+    private function denyAccess(): void
+    {
+        http_response_code(403);
+        echo 'Bu modüle erişim yetkiniz yok.';
+        exit;
     }
 }
