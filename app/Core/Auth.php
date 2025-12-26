@@ -31,7 +31,10 @@ class Auth
             $user = User::findByEmail($email);
 
             if (!$user) {
-                throw new AuthException('user_not_found', 'Kullanıcı bulunamadı.');
+                throw new AuthException(
+                    'user_not_found',
+                    'Kullanıcı bulunamadı. E-posta adresini kontrol edin veya Super Admin henüz oluşturulmadıysa ekleyin.'
+                );
             }
 
             if (!password_verify($password, $user['password_hash'])) {

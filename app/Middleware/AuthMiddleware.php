@@ -9,7 +9,9 @@ class AuthMiddleware
     public function handle(): void
     {
         if (!Auth::check()) {
-            redirect('/login');
+            http_response_code(403);
+            echo 'Bu modüle erişim yetkiniz yok.';
+            exit;
         }
     }
 }

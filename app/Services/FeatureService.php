@@ -48,7 +48,7 @@ class FeatureService
         }
 
         http_response_code(403);
-        echo 'Mevcut paketiniz bu modülü kullanmaya yetmiyor.';
+        echo 'Bu modüle erişim yetkiniz yok.';
         exit;
     }
 

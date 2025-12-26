@@ -111,6 +111,36 @@ CREATE TABLE IF NOT EXISTS products (
     INDEX idx_products_company (company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Backward compatibility: ensure product_group_id column exists for older databases
+SET @has_product_group_column := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'product_group_id'
+);
+SET @add_product_group_column_sql := IF(
+    @has_product_group_column = 0,
+    'ALTER TABLE products ADD COLUMN product_group_id INT UNSIGNED NULL AFTER company_id',
+    'SELECT 1'
+);
+PREPARE stmt FROM @add_product_group_column_sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Ensure foreign key is in place when the column was missing before
+SET @has_product_group_fk := (
+    SELECT COUNT(*)
+    FROM information_schema.TABLE_CONSTRAINTS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND CONSTRAINT_NAME = 'fk_products_group'
+);
+SET @add_product_group_fk_sql := IF(
+    @has_product_group_fk = 0,
+    'ALTER TABLE products ADD CONSTRAINT fk_products_group FOREIGN KEY (product_group_id) REFERENCES product_groups(id) ON DELETE SET NULL',
+    'SELECT 1'
+);
+PREPARE stmt_fk FROM @add_product_group_fk_sql;
+EXECUTE stmt_fk;
+DEALLOCATE PREPARE stmt_fk;
+
 CREATE TABLE IF NOT EXISTS caris (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,

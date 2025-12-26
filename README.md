@@ -51,11 +51,21 @@ Migration dosyası şu admin kullanıcısını ekler:
 - E-posta: `admin@example.com`
 - Şifre: `admin123!`
 
-Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
-- E-posta: `superadmin@example.com`
-- Şifre: `superadmin123!`
-
 > Güvenlik için bu şifreyi giriş yaptıktan sonra mutlaka değiştirin.
+
+## Bilinen Kurulum Gereksinimleri
+- **Super Admin hesabı manuel olarak oluşturulmalıdır.** Kurulumdan sonra `is_super_admin = 1` olacak şekilde bir kullanıcı ekleyin veya güncelleyin. Örnek SQL:
+  ```sql
+  INSERT INTO users (company_id, name, email, password_hash, status, is_super_admin)
+  VALUES (NULL, 'Super Admin', 'superadmin@example.com', '$2y$12$Xh43DJXNBMzBK00dsr7mxOwyJxBh5pbC.cQGALpSavrX5CBQNpEj2', 'active', 1);
+  ```
+  Hazır hash `superadmin123!` şifresi içindir; farklı bir şifre kullanacaksanız `password_hash()` ile yeniden üretin.
+- **Ürün Yönetimi için `database/migrations.sql` dosyasını mutlaka uygulayın.** Dosya, `products.product_group_id` kolonunu eklemek için uyumluluk sorgularını içerir; bu kolon eksik olduğunda ürün işlemleri 500 hatasına düşer.
+
+### Bu düzeltmeler hangi hataları çözer?
+- Middleware katmanında oluşan yönlendirme döngüleri artık 403 yanıtı ve “Bu modüle erişim yetkiniz yok.” mesajıyla durduruluyor.
+- Super Admin hesabı bulunmadığında giriş denemeleri için daha belirgin “kullanıcı yok” uyarısı gösteriliyor.
+- `products.product_group_id` kolonunun eksik olduğu veritabanlarında yaşanan 500 hataları için migration dosyası otomatik kolon ekleme/güncelleme adımlarını içeriyor.
 
 ## Ürün Yönetimi (MVP)
 - **Kapsam:** `product_groups` ve `products` tabloları company_id zorunlu olacak şekilde tanımlıdır; ürün kodu firma bazında tekil, liste fiyatı zorunlu, stok miktarı negatif olamaz. Ürünler ürün gruplarına bağlanabilir; grup seçimi aktif gruplarla kısıtlanır ve form üzerinden yeni grup açılabilir.
