@@ -84,13 +84,31 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     CONSTRAINT fk_subscriptions_package FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE IF NOT EXISTS product_groups (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,
     name VARCHAR(255) NOT NULL,
-    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    status ENUM('active', 'passive') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_products_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    CONSTRAINT fk_product_groups_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    INDEX idx_product_groups_company (company_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS products (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    company_id INT UNSIGNED NOT NULL,
+    product_group_id INT UNSIGNED NULL,
+    code VARCHAR(100) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    list_price DECIMAL(15,2) NOT NULL,
+    stock_quantity INT UNSIGNED NOT NULL DEFAULT 0,
+    status ENUM('active', 'passive') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_products_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    CONSTRAINT fk_products_group FOREIGN KEY (product_group_id) REFERENCES product_groups(id) ON DELETE SET NULL,
+    UNIQUE KEY uniq_company_code (company_id, code),
+    INDEX idx_products_company (company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS caris (
@@ -127,6 +145,7 @@ INSERT INTO roles (company_id, name) VALUES
 INSERT INTO permissions (`key`, description) VALUES
 ('product.view', 'Ürünleri görüntüleme'),
 ('product.create', 'Ürün oluşturma'),
+('product.edit', 'Ürün düzenleme'),
 ('sale.view', 'Satışları görüntüleme'),
 ('sale.create', 'Satış oluşturma'),
 ('cari.view', 'Carileri görüntüleme'),
