@@ -57,6 +57,11 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 
 > Güvenlik için bu şifreyi giriş yaptıktan sonra mutlaka değiştirin.
 
+## Ürün Yönetimi (MVP)
+- **Kapsam:** `product_groups` ve `products` tabloları company_id zorunlu olacak şekilde tanımlıdır; ürün kodu firma bazında tekil, liste fiyatı zorunlu, stok miktarı negatif olamaz. Ürünler ürün gruplarına bağlanabilir; grup seçimi aktif gruplarla kısıtlanır ve form üzerinden yeni grup açılabilir.
+- **Limit & feature ilişkisi:** Tüm ürün rotaları `auth` + `feature:product` + ilgili `permission:product.*` middleware’leri ile korunur. `LimitService::canAddProduct(company_id)` kontrolü `store` işleminde çalışır; limit doluysa “Ürün limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir ve kayıt yapılmaz.
+- **Neden pasife alma var:** Silme yerine statü `passive` olarak güncellenir; geçmiş teklif/satış/satınalma kayıtlarıyla ilişki kopmaz, audit trail korunur.
+
 ## Cari Yönetimi (MVP)
 - Tablolar:
   - `caris`: `type (customer|supplier|both)`, `name`, `tax_office`, `tax_number`, `status (active|passive)`, `company_id`
@@ -72,6 +77,8 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 - `GET /dashboard`: Oturum gerektirir
 - `POST /logout`: Oturum sonlandırma (CSRF korumalı)
 - `GET /products`: Oturum + `permission:product.view` + `feature:product` kontrolü ile korunur
+- `GET /products/create` & `POST /products/store`: Oturum + `feature:product` + `permission:product.create`
+- `GET /products/{id}/edit` & `POST /products/{id}/update` & `POST /products/{id}/deactivate`: Oturum + `feature:product` + `permission:product.edit`
 - `GET /caris`: Oturum + `feature:cari` + `permission:cari.view`
 - `GET /caris/create` & `POST /caris/store`: Oturum + `feature:cari` + `permission:cari.create`
 - `GET /caris/{id}/edit` & `POST /caris/{id}/update` & `POST /caris/{id}/deactivate`: Oturum + `feature:cari` + `permission:cari.edit`
@@ -79,6 +86,14 @@ Ek olarak, sistem sahibi için bir Super Admin kullanıcısı bulunur:
 - `GET /super-admin/companies`: Super Admin firma yönetimi
 - `POST /super-admin/companies`: Super Admin firma oluşturma + paket başlatma
 - `POST /super-admin/subscriptions`: Super Admin paket atama / abonelik güncelleme
+
+## Ürün Yönetimi kısa test senaryosu
+1. `admin@example.com` ile giriş yapın ve pakette `feature:product` bulunduğundan emin olun.
+2. Dashboard menüsünden **Ürünler** sayfasına gidin; boş liste mesajını veya mevcut ürünleri görün.
+3. “Yeni Ürün” butonu ile zorunlu alanları doldurun, isterseniz “Yeni Grup Adı” alanına bir değer yazın ve kaydedin; hem ürün hem grup oluşturulur.
+4. Aynı ürün kodu ile tekrar kayıt deneyin; kod tekilliği uyarısını alın.
+5. Ürünü düzenleyip durumu **pasif** yapın veya “Pasif Et” aksiyonunu kullanın; liste durumu `passive` olarak görünür.
+6. Paket limiti dolu bir senaryo için `LimitService::canAddProduct` false döndüğünde “Ürün limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir ve kayıt yapılmaz.
 
 ## Güvenlik Notları
 - PDO + prepared statements kullanılır.

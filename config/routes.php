@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\CariController;
-use App\Controllers\ProductsController;
+use App\Controllers\ProductController;
 use App\Controllers\SuperAdminController;
 use App\Controllers\UsersController;
 use App\Middleware\AuthMiddleware;
@@ -17,7 +17,12 @@ return [
     ['method' => 'POST', 'path' => '/login', 'handler' => [AuthController::class, 'login'], 'middleware' => []],
     ['method' => 'POST', 'path' => '/logout', 'handler' => [AuthController::class, 'logout'], 'middleware' => [AuthMiddleware::class]],
     ['method' => 'GET', 'path' => '/dashboard', 'handler' => [DashboardController::class, 'index'], 'middleware' => [AuthMiddleware::class]],
-    ['method' => 'GET', 'path' => '/products', 'handler' => [ProductsController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'permission:product.view', 'feature:product']],
+    ['method' => 'GET', 'path' => '/products', 'handler' => [ProductController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.view']],
+    ['method' => 'GET', 'path' => '/products/create', 'handler' => [ProductController::class, 'create'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.create']],
+    ['method' => 'POST', 'path' => '/products/store', 'handler' => [ProductController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.create']],
+    ['method' => 'GET', 'path' => '/products/{id}/edit', 'handler' => [ProductController::class, 'edit'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.edit']],
+    ['method' => 'POST', 'path' => '/products/{id}/update', 'handler' => [ProductController::class, 'update'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.edit']],
+    ['method' => 'POST', 'path' => '/products/{id}/deactivate', 'handler' => [ProductController::class, 'deactivate'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.edit']],
     ['method' => 'GET', 'path' => '/caris', 'handler' => [CariController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'feature:cari', 'permission:cari.view']],
     ['method' => 'GET', 'path' => '/caris/create', 'handler' => [CariController::class, 'create'], 'middleware' => [AuthMiddleware::class, 'feature:cari', 'permission:cari.create']],
     ['method' => 'POST', 'path' => '/caris/store', 'handler' => [CariController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'feature:cari', 'permission:cari.create']],
