@@ -7,6 +7,7 @@ use App\Core\Exceptions\DatabaseConnectionException;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Services\LimitService;
+use PDOException;
 use Throwable;
 
 class ProductController
@@ -25,11 +26,11 @@ class ProductController
         try {
             $products = Product::allByCompany($companyId);
             $groups = ProductGroup::allByCompany($companyId);
-        } catch (DatabaseConnectionException $e) {
-            $this->handleDatabaseIssue($e, '/login');
+        } catch (DatabaseConnectionException|PDOException $e) {
+            $this->handleQueryFailure($e);
             return;
         } catch (Throwable $e) {
-            $this->handleUnexpected($e, '/products');
+            $this->handleUnexpected($e);
             return;
         }
 
@@ -43,11 +44,11 @@ class ProductController
 
         try {
             $groups = ProductGroup::allByCompany($companyId);
-        } catch (DatabaseConnectionException $e) {
-            $this->handleDatabaseIssue($e, '/products');
+        } catch (DatabaseConnectionException|PDOException $e) {
+            $this->handleQueryFailure($e);
             return;
         } catch (Throwable $e) {
-            $this->handleUnexpected($e, '/products');
+            $this->handleUnexpected($e);
             return;
         }
 
@@ -131,11 +132,11 @@ class ProductController
                 'stock_quantity' => $stockQuantity,
                 'status' => 'active',
             ]);
-        } catch (DatabaseConnectionException $e) {
-            $this->handleDatabaseIssue($e, '/products/create');
+        } catch (DatabaseConnectionException|PDOException $e) {
+            $this->handleQueryFailure($e);
             return;
         } catch (Throwable $e) {
-            $this->handleUnexpected($e, '/products/create');
+            $this->handleUnexpected($e);
             return;
         }
 
@@ -151,11 +152,11 @@ class ProductController
         try {
             $product = Product::findByIdForCompany($productId, $companyId);
             $groups = ProductGroup::allByCompany($companyId);
-        } catch (DatabaseConnectionException $e) {
-            $this->handleDatabaseIssue($e, '/products');
+        } catch (DatabaseConnectionException|PDOException $e) {
+            $this->handleQueryFailure($e);
             return;
         } catch (Throwable $e) {
-            $this->handleUnexpected($e, '/products');
+            $this->handleUnexpected($e);
             return;
         }
 
@@ -250,11 +251,11 @@ class ProductController
                 'stock_quantity' => $stockQuantity,
                 'status' => $status,
             ]);
-        } catch (DatabaseConnectionException $e) {
-            $this->handleDatabaseIssue($e, '/products/' . $productId . '/edit');
+        } catch (DatabaseConnectionException|PDOException $e) {
+            $this->handleQueryFailure($e);
             return;
         } catch (Throwable $e) {
-            $this->handleUnexpected($e, '/products/' . $productId . '/edit');
+            $this->handleUnexpected($e);
             return;
         }
 
@@ -275,11 +276,11 @@ class ProductController
 
         try {
             Product::deactivate($productId, $companyId);
-        } catch (DatabaseConnectionException $e) {
-            $this->handleDatabaseIssue($e, '/products');
+        } catch (DatabaseConnectionException|PDOException $e) {
+            $this->handleQueryFailure($e);
             return;
         } catch (Throwable $e) {
-            $this->handleUnexpected($e, '/products');
+            $this->handleUnexpected($e);
             return;
         }
 
@@ -322,17 +323,19 @@ class ProductController
         return (int) $companyId;
     }
 
-    private function handleDatabaseIssue(DatabaseConnectionException $e, string $redirectPath): void
+    private function handleQueryFailure(Throwable $e): void
     {
-        error_log('Database connection issue (product): ' . $e->getMessage());
-        setFlash('error', 'Sistem geçici olarak kullanılamıyor (DB bağlantısı yok).');
-        redirect($redirectPath);
+        http_response_code(500);
+        error_log('Product SQL error: ' . $e->getMessage());
+        echo 'Ürün verileri yüklenirken bir sistem hatası oluştu.';
+        exit;
     }
 
-    private function handleUnexpected(Throwable $e, string $redirectPath): void
+    private function handleUnexpected(Throwable $e): void
     {
+        http_response_code(500);
         error_log('Unexpected product error: ' . $e->getMessage());
-        setFlash('error', 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
-        redirect($redirectPath);
+        echo 'Ürün verileri yüklenirken bir sistem hatası oluştu.';
+        exit;
     }
 }

@@ -18,6 +18,52 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Legacy compatibility: allow NULL company_id for super admins and align foreign key
+SET @users_company_nullable := (
+    SELECT CASE WHEN IS_NULLABLE = 'NO' THEN 1 ELSE 0 END
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'company_id'
+    LIMIT 1
+);
+SET @alter_users_company_nullable_sql := IF(
+    @users_company_nullable = 1,
+    'ALTER TABLE users MODIFY company_id INT UNSIGNED NULL',
+    'SELECT 1'
+);
+PREPARE stmt_users_nullable FROM @alter_users_company_nullable_sql;
+EXECUTE stmt_users_nullable;
+DEALLOCATE PREPARE stmt_users_nullable;
+
+SET @users_fk_name := (
+    SELECT CONSTRAINT_NAME
+    FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'company_id' AND REFERENCED_TABLE_NAME = 'companies'
+    LIMIT 1
+);
+SET @users_fk_delete_rule := (
+    SELECT DELETE_RULE
+    FROM information_schema.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND CONSTRAINT_NAME = @users_fk_name
+    LIMIT 1
+);
+SET @drop_users_fk_sql := IF(
+    @users_fk_name IS NOT NULL AND @users_fk_delete_rule <> 'SET NULL',
+    CONCAT('ALTER TABLE users DROP FOREIGN KEY ', @users_fk_name),
+    'SELECT 1'
+);
+PREPARE stmt_users_drop_fk FROM @drop_users_fk_sql;
+EXECUTE stmt_users_drop_fk;
+DEALLOCATE PREPARE stmt_users_drop_fk;
+
+SET @add_users_fk_sql := IF(
+    (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND CONSTRAINT_NAME = 'fk_users_company') = 0 OR @users_fk_delete_rule <> 'SET NULL',
+    'ALTER TABLE users ADD CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL',
+    'SELECT 1'
+);
+PREPARE stmt_users_add_fk FROM @add_users_fk_sql;
+EXECUTE stmt_users_add_fk;
+DEALLOCATE PREPARE stmt_users_add_fk;
+
 -- Seed data
 INSERT INTO companies (name, status) VALUES ('Örnek Firma', 'active');
 
@@ -111,22 +157,15 @@ CREATE TABLE IF NOT EXISTS products (
     INDEX idx_products_company (company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Backward compatibility: ensure product_group_id column exists for older databases
-SET @has_product_group_column := (
-    SELECT COUNT(*)
-    FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'product_group_id'
-);
-SET @add_product_group_column_sql := IF(
-    @has_product_group_column = 0,
-    'ALTER TABLE products ADD COLUMN product_group_id INT UNSIGNED NULL AFTER company_id',
-    'SELECT 1'
-);
-PREPARE stmt FROM @add_product_group_column_sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+-- Backward compatibility: ensure required product columns exist without data loss
+ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS product_group_id INT UNSIGNED NULL AFTER company_id,
+    ADD COLUMN IF NOT EXISTS code VARCHAR(100) NOT NULL DEFAULT '' AFTER product_group_id,
+    ADD COLUMN IF NOT EXISTS list_price DECIMAL(15,2) NOT NULL DEFAULT 0.00 AFTER description,
+    ADD COLUMN IF NOT EXISTS stock_quantity INT UNSIGNED NOT NULL DEFAULT 0 AFTER list_price,
+    ADD COLUMN IF NOT EXISTS status ENUM('active', 'passive') NOT NULL DEFAULT 'active' AFTER stock_quantity;
 
--- Ensure foreign key is in place when the column was missing before
+-- Ensure foreign key is present for product_group_id
 SET @has_product_group_fk := (
     SELECT COUNT(*)
     FROM information_schema.TABLE_CONSTRAINTS
