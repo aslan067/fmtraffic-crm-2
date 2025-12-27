@@ -12,7 +12,7 @@ class FeatureMiddleware
     public function handle(string $featureKey): void
     {
         if (!Auth::check()) {
-            redirect('/login');
+            $this->denyAccess();
         }
 
         if (Auth::isSuperAdmin()) {
@@ -22,12 +22,17 @@ class FeatureMiddleware
         $companyId = Auth::user()['company_id'] ?? null;
 
         if ($companyId === null) {
-            http_response_code(403);
-            echo 'Mevcut paketiniz bu modülü kullanmaya yetmiyor.';
-            exit;
+            $this->denyAccess();
         }
 
         $this->featureService()->abortIfNoFeature((int) $companyId, $featureKey);
+    }
+
+    private function denyAccess(): void
+    {
+        http_response_code(403);
+        echo 'Bu modüle erişim yetkiniz yok.';
+        exit;
     }
 
     private function featureService(): FeatureService
