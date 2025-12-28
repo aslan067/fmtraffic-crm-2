@@ -19,16 +19,22 @@
     <div style="margin: 16px 0; padding: 12px; background: #f8f9fa; border-radius: 8px;">
         <strong>Menü</strong>
         <ul style="list-style: none; padding-left: 0; margin: 8px 0 0 0;">
-            <?php if (canAccess('cari', 'cari.view')): ?>
-                <li style="margin-bottom: 6px;"><a href="/caris">Cari Yönetimi</a></li>
-            <?php endif; ?>
+            <?php foreach (($modules ?? []) as $moduleKey => $moduleConfig): ?>
+                <?php
+                $route = (string) ($moduleConfig['route'] ?? '');
+                $label = (string) ($moduleConfig['label'] ?? '');
+                ?>
+                <?php if ($route !== '' && $label !== '' && canAccessModule((string) $moduleKey)): ?>
+                    <li style="margin-bottom: 6px;">
+                        <a href="<?php echo htmlspecialchars($route, ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                    </li>
+                <?php endif; ?>
+            <?php endforeach; ?>
 
             <?php if (can('users.create')): ?>
                 <li style="margin-bottom: 6px;"><a href="/users/create">Kullanıcı Oluştur</a></li>
-            <?php endif; ?>
-
-            <?php if (canAccess('product', 'product.view')): ?>
-                <li style="margin-bottom: 6px;"><a href="/products">Ürünler</a></li>
             <?php endif; ?>
 
             <?php if (!empty($user['is_super_admin'])): ?>

@@ -4,6 +4,7 @@ namespace App\Core;
 
 use App\Middleware\PermissionMiddleware;
 use App\Middleware\FeatureMiddleware;
+use App\Middleware\ModuleAccessMiddleware;
 use Throwable;
 
 class Router
@@ -44,6 +45,16 @@ class Router
     {
         foreach ($middlewareDefinitions as $middlewareClass) {
             if (!is_string($middlewareClass)) {
+                continue;
+            }
+
+            if (str_starts_with($middlewareClass, 'module:')) {
+                $this->ensureClassAvailable(ModuleAccessMiddleware::class);
+                $moduleKey = substr($middlewareClass, strlen('module:'));
+                $middleware = new ModuleAccessMiddleware();
+                if (method_exists($middleware, 'handle')) {
+                    $middleware->handle($moduleKey);
+                }
                 continue;
             }
 

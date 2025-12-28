@@ -128,3 +128,11 @@ function canAccess(string $feature, string $permission): bool
 {
     return \App\Core\Auth::canAccess($feature, $permission);
 }
+
+/**
+ * View helper: module-based access control.
+ */
+function canAccessModule(string $moduleKey): bool
+{
+    return \App\Core\Auth::canAccessModule($moduleKey);
+}
