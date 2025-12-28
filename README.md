@@ -84,9 +84,10 @@ Migration dosyası şu admin kullanıcısını ekler:
 - Permission gereksinimleri: `product.edit` ve `product.deactivate` izinleri admin rolüne eklenmiştir; liste, düzenleme ve pasife alma butonları ilgili permission’a göre görünür.
 
 ## Cari Yönetimi (MVP)
-- Tablolar:
-  - `caris`: `type (customer|supplier|both)`, `name`, `tax_office`, `tax_number`, `status (active|passive)`, `company_id`
-  - `contacts`: Cari bazlı iletişim kişileri
+- Tek tablo: `caris` (`cari_type (customer|supplier|both)`, `name`, `phone`, `email`, `status (active|passive)`, `company_id`)
+- Cari tipi mantığı: Aynı kayıt hem müşteri hem tedarikçi olabilir (`cari_type = both`).
+- Super admin, firma filtresi olmadan tüm carileri görebilir; firma adminleri company_id bazlı çalışır.
+- Teklif ve satınalma modülleri için temel veri kaynağıdır.
 - Feature & permission: `feature:cari` + `permission:cari.view|cari.create|cari.edit` zorunludur.
 - Limit kontrolü: `LimitService::canAddCari(company_id)` çağrısı `store` öncesinde yapılır; limit doluysa ekleme yapılmaz.
 - CRUD kapsamı: Listeleme, oluşturma, düzenleme, pasife alma (silme yok).

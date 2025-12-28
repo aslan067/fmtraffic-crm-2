@@ -334,24 +334,123 @@ DEALLOCATE PREPARE stmt_fk;
 CREATE TABLE IF NOT EXISTS caris (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,
-    type ENUM('customer', 'supplier', 'both') NOT NULL DEFAULT 'customer',
     name VARCHAR(255) NOT NULL,
-    tax_office VARCHAR(255) NULL,
-    tax_number VARCHAR(50) NULL,
+    cari_type ENUM('customer', 'supplier', 'both') NOT NULL DEFAULT 'customer',
+    phone VARCHAR(50) NULL,
+    email VARCHAR(255) NULL,
     status ENUM('active', 'passive') NOT NULL DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_caris_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+    CONSTRAINT fk_caris_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    INDEX idx_caris_company (company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS contacts (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    cari_id INT UNSIGNED NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NULL,
-    phone VARCHAR(50) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_contacts_cari FOREIGN KEY (cari_id) REFERENCES caris(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Backward compatibility for caris table
+SET @has_cari_type := (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'cari_type'
+);
+
+SET @has_legacy_type := (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'type'
+);
+
+SET @rename_type_sql := IF(
+    @has_cari_type = 0 AND @has_legacy_type = 1,
+    'ALTER TABLE caris CHANGE COLUMN `type` cari_type ENUM(''customer'', ''supplier'', ''both'') NOT NULL DEFAULT ''customer'' AFTER name',
+    'SELECT 1'
+);
+PREPARE stmt_rename_cari_type FROM @rename_type_sql;
+EXECUTE stmt_rename_cari_type;
+DEALLOCATE PREPARE stmt_rename_cari_type;
+
+SET @add_cari_type_sql := IF(
+    @has_cari_type = 0 AND @has_legacy_type = 0,
+    'ALTER TABLE caris ADD COLUMN cari_type ENUM(''customer'', ''supplier'', ''both'') NOT NULL DEFAULT ''customer'' AFTER name',
+    'SELECT 1'
+);
+PREPARE stmt_add_cari_type FROM @add_cari_type_sql;
+EXECUTE stmt_add_cari_type;
+DEALLOCATE PREPARE stmt_add_cari_type;
+
+SET @ensure_company_sql := (
+    SELECT IF(
+        (SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'company_id') = 'YES',
+        'ALTER TABLE caris MODIFY company_id INT UNSIGNED NOT NULL',
+        'SELECT 1'
+    )
+);
+PREPARE stmt_company_not_null FROM @ensure_company_sql;
+EXECUTE stmt_company_not_null;
+DEALLOCATE PREPARE stmt_company_not_null;
+
+SET @add_name_sql := (
+    SELECT IF(
+        (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'name') = 0,
+        'ALTER TABLE caris ADD COLUMN name VARCHAR(255) NOT NULL AFTER company_id',
+        'SELECT 1'
+    )
+);
+PREPARE stmt_add_name FROM @add_name_sql;
+EXECUTE stmt_add_name;
+DEALLOCATE PREPARE stmt_add_name;
+
+SET @add_phone_sql := (
+    SELECT IF(
+        (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'phone') = 0,
+        'ALTER TABLE caris ADD COLUMN phone VARCHAR(50) NULL AFTER cari_type',
+        'SELECT 1'
+    )
+);
+PREPARE stmt_add_phone FROM @add_phone_sql;
+EXECUTE stmt_add_phone;
+DEALLOCATE PREPARE stmt_add_phone;
+
+SET @add_email_sql := (
+    SELECT IF(
+        (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'email') = 0,
+        'ALTER TABLE caris ADD COLUMN email VARCHAR(255) NULL AFTER phone',
+        'SELECT 1'
+    )
+);
+PREPARE stmt_add_email FROM @add_email_sql;
+EXECUTE stmt_add_email;
+DEALLOCATE PREPARE stmt_add_email;
+
+SET @update_status_sql := (
+    SELECT IF(
+        (SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'status') = 'enum',
+        'SELECT 1',
+        'ALTER TABLE caris MODIFY status ENUM(''active'', ''passive'') NOT NULL DEFAULT ''active'''
+    )
+);
+PREPARE stmt_update_status FROM @update_status_sql;
+EXECUTE stmt_update_status;
+DEALLOCATE PREPARE stmt_update_status;
+
+SET @drop_tax_office_sql := (
+    SELECT IF(
+        (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'tax_office') = 1,
+        'ALTER TABLE caris DROP COLUMN tax_office',
+        'SELECT 1'
+    )
+);
+PREPARE stmt_drop_tax_office FROM @drop_tax_office_sql;
+EXECUTE stmt_drop_tax_office;
+DEALLOCATE PREPARE stmt_drop_tax_office;
+
+SET @drop_tax_number_sql := (
+    SELECT IF(
+        (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'caris' AND COLUMN_NAME = 'tax_number') = 1,
+        'ALTER TABLE caris DROP COLUMN tax_number',
+        'SELECT 1'
+    )
+);
+PREPARE stmt_drop_tax_number FROM @drop_tax_number_sql;
+EXECUTE stmt_drop_tax_number;
+DEALLOCATE PREPARE stmt_drop_tax_number;
+
+DROP TABLE IF EXISTS contacts;
 
 -- Seed roles
 INSERT INTO roles (company_id, name) VALUES
@@ -409,6 +508,13 @@ SELECT r.id, p.id
 FROM roles r
 JOIN permissions p ON p.`key` IN ('product.edit', 'product.deactivate')
 WHERE r.name = 'Admin'
+ON DUPLICATE KEY UPDATE permission_id = permission_id;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+JOIN permissions p ON p.`key` IN ('cari.view', 'cari.create', 'cari.edit')
+WHERE r.name = 'Sales'
 ON DUPLICATE KEY UPDATE permission_id = permission_id;
 
 -- Assign default admin role to seeded user
