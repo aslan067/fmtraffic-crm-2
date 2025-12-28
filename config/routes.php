@@ -30,6 +30,8 @@ return [
     ['method' => 'GET', 'path' => '/caris/{id}/edit', 'handler' => [CariController::class, 'edit'], 'middleware' => [AuthMiddleware::class, 'module:caris']],
     ['method' => 'POST', 'path' => '/caris/{id}/update', 'handler' => [CariController::class, 'update'], 'middleware' => [AuthMiddleware::class, 'module:caris']],
     ['method' => 'POST', 'path' => '/caris/{id}/deactivate', 'handler' => [CariController::class, 'deactivate'], 'middleware' => [AuthMiddleware::class, 'module:caris']],
+    ['method' => 'GET', 'path' => '/offers/select-company', 'handler' => [OfferController::class, 'selectCompanyForm'], 'middleware' => [AuthMiddleware::class, SuperAdminMiddleware::class]],
+    ['method' => 'POST', 'path' => '/offers/select-company', 'handler' => [OfferController::class, 'selectCompany'], 'middleware' => [AuthMiddleware::class, SuperAdminMiddleware::class]],
     ['method' => 'GET', 'path' => '/offers', 'handler' => [OfferController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
     ['method' => 'GET', 'path' => '/offers/create', 'handler' => [OfferController::class, 'create'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
     ['method' => 'POST', 'path' => '/offers', 'handler' => [OfferController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'module:offers']],

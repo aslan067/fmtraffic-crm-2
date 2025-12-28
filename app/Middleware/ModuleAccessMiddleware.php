@@ -3,6 +3,7 @@
 namespace App\Middleware;
 
 use App\Core\Auth;
+use App\Core\ModuleRegistry;
 use App\Models\Permission;
 use Throwable;
 
@@ -12,7 +13,7 @@ class ModuleAccessMiddleware
     {
         $this->bootstrapPermissions($moduleKey);
 
-        if (Auth::canAccessModule($moduleKey)) {
+        if ($this->hasModuleAccess($moduleKey)) {
             return;
         }
 
@@ -34,5 +35,22 @@ class ModuleAccessMiddleware
         } catch (Throwable $e) {
             error_log('Offer permission bootstrap error: ' . $e->getMessage());
         }
+    }
+
+    private function hasModuleAccess(string $moduleKey): bool
+    {
+        if (Auth::canAccessModule($moduleKey)) {
+            return true;
+        }
+
+        $module = ModuleRegistry::get($moduleKey);
+        $permissionKey = (string) ($module['permission'] ?? '');
+
+        if ($moduleKey === 'offers' && $permissionKey !== '' && Auth::hasPermission($permissionKey)) {
+            // Permission DB'de var; modülü engelleme.
+            return true;
+        }
+
+        return false;
     }
 }
