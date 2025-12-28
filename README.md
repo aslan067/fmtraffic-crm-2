@@ -57,6 +57,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 - Her güncellemeden sonra `database/migrations.sql` dosyasını mevcut veritabanına tekrar uygulayın. Böylece ürün kodu ve ürün grubu gibi kolonlar geride kalmaz.
 - `products` veya `users` tabloları güncel şema ile uyumlu değilse SQL sorguları `p.code` / `p.product_group_id` kolonlarını bulamaz ve 500 hatası üretir.
 - Super admin mimarisi gereği `users.company_id` alanı **NULL** olabilir; foreign key kısıtları `ON DELETE SET NULL` olacak şekilde ayarlanmalıdır. Migration dosyası bu uyumu otomatik hale getirir.
+- Bu düzeltme p.code SQL hatasını kalıcı olarak çözer.
 
 ## Bilinen Kurulum Gereksinimleri
 - **Super Admin hesabı manuel olarak oluşturulmalıdır.** Kurulumdan sonra `is_super_admin = 1` olacak şekilde bir kullanıcı ekleyin veya güncelleyin. Örnek SQL:
@@ -109,6 +110,14 @@ Migration dosyası şu admin kullanıcısını ekler:
 4. Aynı ürün kodu ile tekrar kayıt deneyin; kod tekilliği uyarısını alın.
 5. Ürünü düzenleyip durumu **pasif** yapın veya “Pasif Et” aksiyonunu kullanın; liste durumu `passive` olarak görünür.
 6. Paket limiti dolu bir senaryo için `LimitService::canAddProduct` false döndüğünde “Ürün limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir ve kayıt yapılmaz.
+
+## Company admin ürün test senaryosu
+1. Company admin ile login ol.
+2. `/products` aç.
+3. Ürün listesi sorunsuz yüklenmeli.
+4. Yeni ürün ekle:
+   - `code` zorunlu.
+   - Aynı firmada tekil olmalı.
 
 ## Güvenlik Notları
 - PDO + prepared statements kullanılır.

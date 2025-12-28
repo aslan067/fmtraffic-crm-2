@@ -158,12 +158,89 @@ CREATE TABLE IF NOT EXISTS products (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Backward compatibility: ensure required product columns exist without data loss
-ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS product_group_id INT UNSIGNED NULL AFTER company_id,
-    ADD COLUMN IF NOT EXISTS code VARCHAR(100) NOT NULL DEFAULT '' AFTER product_group_id,
-    ADD COLUMN IF NOT EXISTS list_price DECIMAL(15,2) NOT NULL DEFAULT 0.00 AFTER description,
-    ADD COLUMN IF NOT EXISTS stock_quantity INT UNSIGNED NOT NULL DEFAULT 0 AFTER list_price,
-    ADD COLUMN IF NOT EXISTS status ENUM('active', 'passive') NOT NULL DEFAULT 'active' AFTER stock_quantity;
+SET @missing_product_group_id := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'product_group_id'
+);
+SET @add_product_group_id_sql := IF(
+    @missing_product_group_id = 0,
+    'ALTER TABLE products ADD COLUMN product_group_id INT UNSIGNED NULL AFTER company_id',
+    'SELECT 1'
+);
+PREPARE stmt_add_product_group_id FROM @add_product_group_id_sql;
+EXECUTE stmt_add_product_group_id;
+DEALLOCATE PREPARE stmt_add_product_group_id;
+
+SET @missing_product_code := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'code'
+);
+SET @add_product_code_sql := IF(
+    @missing_product_code = 0,
+    'ALTER TABLE products ADD COLUMN code VARCHAR(100) NOT NULL DEFAULT '''' AFTER product_group_id',
+    'SELECT 1'
+);
+PREPARE stmt_add_product_code FROM @add_product_code_sql;
+EXECUTE stmt_add_product_code;
+DEALLOCATE PREPARE stmt_add_product_code;
+
+SET @missing_list_price := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'list_price'
+);
+SET @add_list_price_sql := IF(
+    @missing_list_price = 0,
+    'ALTER TABLE products ADD COLUMN list_price DECIMAL(15,2) NOT NULL DEFAULT 0.00 AFTER description',
+    'SELECT 1'
+);
+PREPARE stmt_add_list_price FROM @add_list_price_sql;
+EXECUTE stmt_add_list_price;
+DEALLOCATE PREPARE stmt_add_list_price;
+
+SET @missing_stock_quantity := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'stock_quantity'
+);
+SET @add_stock_quantity_sql := IF(
+    @missing_stock_quantity = 0,
+    'ALTER TABLE products ADD COLUMN stock_quantity INT UNSIGNED NOT NULL DEFAULT 0 AFTER list_price',
+    'SELECT 1'
+);
+PREPARE stmt_add_stock_quantity FROM @add_stock_quantity_sql;
+EXECUTE stmt_add_stock_quantity;
+DEALLOCATE PREPARE stmt_add_stock_quantity;
+
+SET @missing_status := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'status'
+);
+SET @add_status_sql := IF(
+    @missing_status = 0,
+    'ALTER TABLE products ADD COLUMN status ENUM(''active'', ''passive'') NOT NULL DEFAULT ''active'' AFTER stock_quantity',
+    'SELECT 1'
+);
+PREPARE stmt_add_status FROM @add_status_sql;
+EXECUTE stmt_add_status;
+DEALLOCATE PREPARE stmt_add_status;
+
+SET @has_company_code_unique := (
+    SELECT COUNT(*)
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND INDEX_NAME = 'uniq_company_code'
+);
+SET @add_company_code_unique_sql := IF(
+    @has_company_code_unique = 0,
+    'ALTER TABLE products ADD CONSTRAINT uniq_company_code UNIQUE (company_id, code)',
+    'SELECT 1'
+);
+PREPARE stmt_add_company_code_unique FROM @add_company_code_unique_sql;
+EXECUTE stmt_add_company_code_unique;
+DEALLOCATE PREPARE stmt_add_company_code_unique;
 
 -- Ensure foreign key is present for product_group_id
 SET @has_product_group_fk := (
