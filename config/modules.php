@@ -15,4 +15,10 @@ return [
         'permission' => 'cari.view',
         'label' => 'Cari Yönetimi',
     ],
+    'offers' => [
+        'route' => '/offers',
+        'feature' => 'offer',
+        'permission' => 'offer.view',
+        'label' => 'Teklifler',
+    ],
 ];

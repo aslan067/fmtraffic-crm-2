@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\OfferController;
 use App\Controllers\CariController;
 use App\Controllers\ProductController;
 use App\Controllers\SuperAdminController;
@@ -29,6 +30,11 @@ return [
     ['method' => 'GET', 'path' => '/caris/{id}/edit', 'handler' => [CariController::class, 'edit'], 'middleware' => [AuthMiddleware::class, 'module:caris']],
     ['method' => 'POST', 'path' => '/caris/{id}/update', 'handler' => [CariController::class, 'update'], 'middleware' => [AuthMiddleware::class, 'module:caris']],
     ['method' => 'POST', 'path' => '/caris/{id}/deactivate', 'handler' => [CariController::class, 'deactivate'], 'middleware' => [AuthMiddleware::class, 'module:caris']],
+    ['method' => 'GET', 'path' => '/offers', 'handler' => [OfferController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
+    ['method' => 'GET', 'path' => '/offers/create', 'handler' => [OfferController::class, 'create'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
+    ['method' => 'POST', 'path' => '/offers', 'handler' => [OfferController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
+    ['method' => 'GET', 'path' => '/offers/{id}', 'handler' => [OfferController::class, 'show'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
+    ['method' => 'POST', 'path' => '/offers/{id}/status', 'handler' => [OfferController::class, 'updateStatus'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
     ['method' => 'GET', 'path' => '/users/create', 'handler' => [UsersController::class, 'create'], 'middleware' => [AuthMiddleware::class]],
     ['method' => 'POST', 'path' => '/users', 'handler' => [UsersController::class, 'store'], 'middleware' => [AuthMiddleware::class]],
     ['method' => 'GET', 'path' => '/super-admin/companies', 'handler' => [SuperAdminController::class, 'listCompanies'], 'middleware' => [AuthMiddleware::class, SuperAdminMiddleware::class]],
