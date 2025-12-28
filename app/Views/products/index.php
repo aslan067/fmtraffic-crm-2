@@ -30,7 +30,9 @@
     <div class="card">
         <div class="header">
             <h2>Ürünler</h2>
-            <a href="/products/create" class="button">Yeni Ürün</a>
+            <?php if (canAccess('product', 'product.create')): ?>
+                <a href="/products/create" class="button">Yeni Ürün</a>
+            <?php endif; ?>
         </div>
 
         <?php if (!empty($flash['success'])): ?>
@@ -49,11 +51,15 @@
                         <th>Kod</th>
                         <th>Ad</th>
                         <th>Grup</th>
+                        <th>Kategori</th>
+                        <th>Para Birimi</th>
                         <th>Liste Fiyatı</th>
                         <th>Stok</th>
                         <th>Durum</th>
                         <th>Oluşturulma</th>
-                        <th>İşlemler</th>
+                        <?php if (canAccess('product', 'product.edit') || canAccess('product', 'product.deactivate')): ?>
+                            <th>İşlemler</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,19 +68,25 @@
                             <td><?php echo htmlspecialchars($product['code'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($product['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($product['group_name'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars($product['category'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars($product['currency'] ?? 'TRY', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo number_format((float) ($product['list_price'] ?? 0), 2, ',', '.'); ?></td>
                             <td><?php echo htmlspecialchars((string) ($product['stock_quantity'] ?? 0), ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><span class="badge <?php echo htmlspecialchars($product['status'] ?? 'active', ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($product['status'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span></td>
                             <td><?php echo htmlspecialchars($product['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td>
-                                <a href="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/edit">Düzenle</a>
-                                <?php if (($product['status'] ?? '') !== 'passive'): ?>
-                                    <form method="POST" action="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/deactivate" class="inline" onsubmit="return confirm('Ürün pasife alınsın mı?');">
-                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
-                                        <button type="submit" class="danger">Pasif Et</button>
-                                    </form>
-                                <?php endif; ?>
-                            </td>
+                            <?php if (canAccess('product', 'product.edit') || canAccess('product', 'product.deactivate')): ?>
+                                <td>
+                                    <?php if (canAccess('product', 'product.edit')): ?>
+                                        <a href="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/edit">Düzenle</a>
+                                    <?php endif; ?>
+                                    <?php if (canAccess('product', 'product.deactivate') && ($product['status'] ?? '') !== 'passive'): ?>
+                                        <form method="POST" action="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/deactivate" class="inline" onsubmit="return confirm('Ürün pasife alınsın mı?');">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button type="submit" class="danger">Pasif Et</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -55,6 +55,22 @@
         <label for="description">Açıklama</label>
         <textarea id="description" name="description" rows="3" placeholder="Kısa açıklama"></textarea>
 
+        <label for="category">Ürün Kategorisi</label>
+        <input id="category" name="category" type="text" placeholder="Örn: Elektronik">
+
+        <label for="currency">Para Birimi</label>
+        <select id="currency" name="currency">
+            <option value="TRY">TRY</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+        </select>
+
+        <label for="unit">Birim</label>
+        <input id="unit" name="unit" type="text" placeholder="Örn: Adet, Koli, Metre">
+
+        <label for="image_url">Görsel URL</label>
+        <input id="image_url" name="image_url" type="text" placeholder="https://...">
+
         <label for="list_price">Liste Fiyatı</label>
         <input id="list_price" name="list_price" type="number" min="0" step="0.01" required>
 
