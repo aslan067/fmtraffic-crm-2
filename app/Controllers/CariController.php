@@ -20,6 +20,7 @@ class CariController
 
     public function index(): void
     {
+        $this->assertModuleAccess('caris');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
 
@@ -42,6 +43,8 @@ class CariController
 
     public function create(): void
     {
+        $this->assertModuleAccess('caris');
+        $this->assertPermission('cari.create', '/caris');
         $this->requireCompanyContext('/caris');
         $flash = getFlash();
         view('cari/create', ['flash' => $flash]);
@@ -49,12 +52,14 @@ class CariController
 
     public function store(): void
     {
+        $this->assertModuleAccess('caris');
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
             setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/caris/create');
         }
 
+        $this->assertPermission('cari.create', '/caris');
         $companyId = $this->requireCompanyContext('/caris/create');
 
         $cariType = trim($_POST['cari_type'] ?? '');
@@ -99,6 +104,8 @@ class CariController
 
     public function edit($id): void
     {
+        $this->assertModuleAccess('caris');
+        $this->assertPermission('cari.edit', '/caris');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
         $cariId = (int) $id;
@@ -127,12 +134,14 @@ class CariController
 
     public function update($id): void
     {
+        $this->assertModuleAccess('caris');
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
             setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/caris');
         }
 
+        $this->assertPermission('cari.edit', '/caris');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
         $cariId = (int) $id;
@@ -184,12 +193,14 @@ class CariController
 
     public function deactivate($id): void
     {
+        $this->assertModuleAccess('caris');
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
             setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/caris');
         }
 
+        $this->assertPermission('cari.edit', '/caris');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
         $cariId = (int) $id;
@@ -249,5 +260,28 @@ class CariController
         error_log('Cari SQL error: ' . $e->getMessage());
         setFlash('error', 'İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.');
         redirect($redirectPath);
+    }
+
+    private function assertModuleAccess(string $moduleKey): void
+    {
+        if (Auth::canAccessModule($moduleKey)) {
+            return;
+        }
+
+        http_response_code(403);
+        echo 'Bu modüle erişim yetkiniz yok.';
+        exit;
+    }
+
+    private function assertPermission(string $permissionKey, string $redirectPath): void
+    {
+        if (Auth::isSuperAdmin()) {
+            return;
+        }
+
+        if (!Auth::hasPermission($permissionKey)) {
+            setFlash('error', 'Bu işlem için yetkiniz yok.');
+            redirect($redirectPath);
+        }
     }
 }

@@ -21,6 +21,7 @@ class ProductController
 
     public function index(): void
     {
+        $this->assertModuleAccess('products');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $this->resolveCompanyContext('/products', $isSuperAdmin);
 
@@ -46,6 +47,8 @@ class ProductController
 
     public function create(): void
     {
+        $this->assertModuleAccess('products');
+        $this->assertPermission('product.create', '/products');
         $companyId = $this->requireCompanyContext('/products');
 
         try {
@@ -64,12 +67,14 @@ class ProductController
 
     public function store(): void
     {
+        $this->assertModuleAccess('products');
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
             setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/products/create');
         }
 
+        $this->assertPermission('product.create', '/products');
         $companyId = $this->requireCompanyContext('/products/create');
 
         $code = trim($_POST['code'] ?? '');
@@ -166,6 +171,8 @@ class ProductController
 
     public function edit($id): void
     {
+        $this->assertModuleAccess('products');
+        $this->assertPermission('product.edit', '/products');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $this->resolveCompanyContext('/products', $isSuperAdmin);
         $productId = (int) $id;
@@ -198,12 +205,14 @@ class ProductController
 
     public function update($id): void
     {
+        $this->assertModuleAccess('products');
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
             setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/products');
         }
 
+        $this->assertPermission('product.edit', '/products');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $this->resolveCompanyContext('/products', $isSuperAdmin);
         $productId = (int) $id;
@@ -310,12 +319,14 @@ class ProductController
 
     public function deactivate($id): void
     {
+        $this->assertModuleAccess('products');
         $token = $_POST['csrf_token'] ?? '';
         if (!verify_csrf_token($token)) {
             setFlash('error', 'Geçersiz oturum doğrulaması.');
             redirect('/products');
         }
 
+        $this->assertPermission('product.deactivate', '/products');
         $isSuperAdmin = Auth::isSuperAdmin();
         $companyId = $this->resolveCompanyContext('/products', $isSuperAdmin);
         $productId = (int) $id;
@@ -407,5 +418,28 @@ class ProductController
         error_log('Unexpected product error: ' . $e->getMessage());
         echo 'Ürün verileri yüklenirken bir sistem hatası oluştu.';
         exit;
+    }
+
+    private function assertModuleAccess(string $moduleKey): void
+    {
+        if (Auth::canAccessModule($moduleKey)) {
+            return;
+        }
+
+        http_response_code(403);
+        echo 'Bu modüle erişim yetkiniz yok.';
+        exit;
+    }
+
+    private function assertPermission(string $permissionKey, string $redirectPath): void
+    {
+        if (Auth::isSuperAdmin()) {
+            return;
+        }
+
+        if (!Auth::hasPermission($permissionKey)) {
+            setFlash('error', 'Bu işlem için yetkiniz yok.');
+            redirect($redirectPath);
+        }
     }
 }

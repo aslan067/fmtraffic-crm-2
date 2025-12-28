@@ -68,6 +68,11 @@ Migration dosyası şu admin kullanıcısını ekler:
   Hazır hash `superadmin123!` şifresi içindir; farklı bir şifre kullanacaksanız `password_hash()` ile yeniden üretin.
 - **Ürün Yönetimi için `database/migrations.sql` dosyasını mutlaka uygulayın.** Dosya, `products.product_group_id` kolonunu eklemek için uyumluluk sorgularını içerir; bu kolon eksik olduğunda ürün işlemleri 500 hatasına düşer.
 
+## Yetki & Menü Mimarisi
+- Modüller `config/modules.php` dosyasında merkezi olarak tanımlanır; her modül için rota (`route`), paket özelliği (`feature`), gerekli izin (`permission`) ve menü etiketi (`label`) bilgileri tek noktadadır. Başlangıçta `products` ve `caris` modülleri yer alır.
+- `Auth::canAccessModule($moduleKey)` super admin durumunda tüm kontrolleri bypass eder; normal kullanıcılar için hem feature hem permission kontrolünü birlikte gerçekleştirir. Aynı fonksiyon menü, middleware ve controller tarafında ortak kullanılır.
+- `ModuleAccessMiddleware` rotalarda `module:<key>` parametresi ile çağrılır ve `Auth::canAccessModule` false dönerse 403 üretir. Dashboard menüsü de bu dosyayı okuyarak dinamik olarak güncellenir; modül eklendiğinde link otomatik görünür.
+
 ### Bu düzeltmeler hangi hataları çözer?
 - Middleware katmanında oluşan yönlendirme döngüleri artık 403 yanıtı ve “Bu modüle erişim yetkiniz yok.” mesajıyla durduruluyor.
 - Super Admin hesabı bulunmadığında giriş denemeleri için daha belirgin “kullanıcı yok” uyarısı gösteriliyor.
@@ -75,7 +80,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 
 ## Ürün Yönetimi (MVP)
 - **Kapsam:** `product_groups` ve `products` tabloları company_id zorunlu olacak şekilde tanımlıdır; ürün kodu firma bazında tekil, liste fiyatı zorunlu, stok miktarı negatif olamaz. Ürünler ürün gruplarına bağlanabilir; grup seçimi aktif gruplarla kısıtlanır ve form üzerinden yeni grup açılabilir.
-- **Limit & feature ilişkisi:** Tüm ürün rotaları `auth` + `feature:product` + ilgili `permission:product.*` middleware’leri ile korunur. `LimitService::canAddProduct(company_id)` kontrolü `store` işleminde çalışır; limit doluysa “Ürün limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir ve kayıt yapılmaz.
+- **Limit & feature ilişkisi:** Tüm ürün rotaları `AuthMiddleware` + `ModuleAccessMiddleware (products)` ile modül bazında korunur; oluşturma/düzenleme/pasife alma aksiyonları controller içinde `product.create|edit|deactivate` izinleriyle ayrıca doğrulanır. `LimitService::canAddProduct(company_id)` kontrolü `store` işleminde çalışır; limit doluysa “Ürün limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir ve kayıt yapılmaz.
 - **Neden pasife alma var:** Silme yerine statü `passive` olarak güncellenir; geçmiş teklif/satış/satınalma kayıtlarıyla ilişki kopmaz, audit trail korunur.
 
 ## Ürün Yönetimi Genişletmeleri
@@ -88,7 +93,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 - Cari tipi mantığı: Aynı kayıt hem müşteri hem tedarikçi olabilir (`cari_type = both`).
 - Super admin, firma filtresi olmadan tüm carileri görebilir; firma adminleri company_id bazlı çalışır.
 - Teklif ve satınalma modülleri için temel veri kaynağıdır.
-- Feature & permission: `feature:cari` + `permission:cari.view|cari.create|cari.edit` zorunludur.
+- Feature & permission: Modül erişimi `ModuleAccessMiddleware (caris)` + `Auth::canAccessModule('caris')` ile sağlanır; oluşturma/güncelleme/pasife alma aksiyonları controller içinde `cari.create|edit` izinleriyle doğrulanır.
 - Limit kontrolü: `LimitService::canAddCari(company_id)` çağrısı `store` öncesinde yapılır; limit doluysa ekleme yapılmaz.
 - CRUD kapsamı: Listeleme, oluşturma, düzenleme, pasife alma (silme yok).
 - Rotalar: `/caris`, `/caris/create`, `/caris/store`, `/caris/{id}/edit`, `/caris/{id}/update`, `/caris/{id}/deactivate`
@@ -98,13 +103,13 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `POST /login`: Kimlik doğrulama ve session oluşturma
 - `GET /dashboard`: Oturum gerektirir
 - `POST /logout`: Oturum sonlandırma (CSRF korumalı)
-- `GET /products`: Oturum + `permission:product.view` + `feature:product` kontrolü ile korunur
-- `GET /products/create` & `POST /products/store`: Oturum + `feature:product` + `permission:product.create`
-- `GET /products/{id}/edit` & `POST /products/{id}/update`: Oturum + `feature:product` + `permission:product.edit`
-- `POST /products/{id}/deactivate`: Oturum + `feature:product` + `permission:product.deactivate`
-- `GET /caris`: Oturum + `feature:cari` + `permission:cari.view`
-- `GET /caris/create` & `POST /caris/store`: Oturum + `feature:cari` + `permission:cari.create`
-- `GET /caris/{id}/edit` & `POST /caris/{id}/update` & `POST /caris/{id}/deactivate`: Oturum + `feature:cari` + `permission:cari.edit`
+- `GET /products`: Oturum + `ModuleAccessMiddleware (products)` + modül konfigürasyonundaki feature/permission kontrolü
+- `GET /products/create` & `POST /products/store`: Oturum + `ModuleAccessMiddleware (products)` + controller içinde `product.create` izni doğrulaması
+- `GET /products/{id}/edit` & `POST /products/{id}/update`: Oturum + `ModuleAccessMiddleware (products)` + controller içinde `product.edit` izni doğrulaması
+- `POST /products/{id}/deactivate`: Oturum + `ModuleAccessMiddleware (products)` + controller içinde `product.deactivate` izni doğrulaması
+- `GET /caris`: Oturum + `ModuleAccessMiddleware (caris)` + modül konfigürasyonundaki feature/permission kontrolü
+- `GET /caris/create` & `POST /caris/store`: Oturum + `ModuleAccessMiddleware (caris)` + controller içinde `cari.create` izni doğrulaması
+- `GET /caris/{id}/edit` & `POST /caris/{id}/update` & `POST /caris/{id}/deactivate`: Oturum + `ModuleAccessMiddleware (caris)` + controller içinde `cari.edit` izni doğrulaması
 - `GET /users/create` & `POST /users`: Paket limitine tabi kullanıcı oluşturma
 - `GET /super-admin/companies`: Super Admin firma yönetimi
 - `POST /super-admin/companies`: Super Admin firma oluşturma + paket başlatma
@@ -139,13 +144,14 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `App\Core\Auth` içinde:
   - `hasRole($roleName)`: Kullanıcının rolünü doğrular.
   - `hasPermission($permissionKey)`: Rol-permission ilişkisi üzerinden yetki kontrolü yapar.
+  - `canAccessModule($moduleKey)`: Modül konfigürasyonundaki feature + permission değerlerini birlikte doğrular, super admin için her zaman true döner.
 - `Auth::isSuperAdmin()`: Sistem sahibini temsil eder; tüm yetkilere sahiptir ve company_id olmadan çalışır.
-- Middleware kullanımı: `permission:<key>` formatı ile route tanımına eklenir. Örnek: `/products` rotası `permission:product.view` ister.
+- Middleware kullanımı: `module:<key>` formatı ile `ModuleAccessMiddleware` tetiklenir; ek aksiyon izinleri controller katmanında doğrulanır.
 
 ## Dinamik Menü & Yetki Senkronizasyonu
-- Dashboard/menü tarafında öğeler, kullanıcının rol yetkilerine ve paket feature’larına göre gösterilir; yetkisi veya feature’ı olmayan öğeler UI’da gizlenir.
-- UI gizleme yalnızca UX içindir; gerçek güvenlik backend middleware katmanında (AuthMiddleware + FeatureMiddleware) sağlanır.
-- Zincir: Auth -> (FeatureService ile paket feature kontrolü) + (Permission kontrolü) → Menüde gösterme/ gizleme kararını verir.
+- Dashboard/menü tarafında öğeler `config/modules.php` dosyasındaki kayıtlar üzerinden döngüyle üretilir; `Auth::canAccessModule` true döndüğü sürece link görünür.
+- UI gizleme yalnızca UX içindir; gerçek güvenlik backend tarafında `AuthMiddleware + ModuleAccessMiddleware` ve controller içindeki aksiyon bazlı permission kontrolleriyle sağlanır.
+- Zincir: Auth -> ModuleAccessMiddleware (feature + base permission) -> Controller permission kontrolleri → Menüde göster/gizle kararı aynı fonksiyonla senkron gider.
 
 ## Super Admin vs Firma Admin
 - **Super Admin**: Sistemin sahibidir, herhangi bir `company_id`'ye bağlı değildir. Tüm firmaları görür, firma oluşturur, paket atar, abonelik başlatır veya askıya alır. `/super-admin/*` rotalarına erişebilir.

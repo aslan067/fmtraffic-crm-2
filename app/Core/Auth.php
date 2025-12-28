@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Services\FeatureService;
 use App\Core\Exceptions\AuthException;
 use App\Core\Exceptions\DatabaseConnectionException;
+use App\Core\ModuleRegistry;
 use Throwable;
 
 class Auth
@@ -181,6 +182,31 @@ class Auth
         }
 
         return self::hasFeature($featureKey) && self::can($permissionKey);
+    }
+
+    public static function canAccessModule(string $moduleKey): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        if (!self::check()) {
+            return false;
+        }
+
+        $module = ModuleRegistry::get($moduleKey);
+        if ($module === null) {
+            return false;
+        }
+
+        $featureKey = (string) ($module['feature'] ?? '');
+        $permissionKey = (string) ($module['permission'] ?? '');
+
+        if ($featureKey === '' || $permissionKey === '') {
+            return false;
+        }
+
+        return self::hasFeature($featureKey) && self::hasPermission($permissionKey);
     }
 
     public static function isSuperAdmin(): bool
