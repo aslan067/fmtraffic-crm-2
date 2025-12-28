@@ -186,6 +186,20 @@ PREPARE stmt_add_product_code FROM @add_product_code_sql;
 EXECUTE stmt_add_product_code;
 DEALLOCATE PREPARE stmt_add_product_code;
 
+SET @missing_description := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'description'
+);
+SET @add_description_sql := IF(
+    @missing_description = 0,
+    'ALTER TABLE products ADD COLUMN description TEXT NULL AFTER name',
+    'SELECT 1'
+);
+PREPARE stmt_add_description FROM @add_description_sql;
+EXECUTE stmt_add_description;
+DEALLOCATE PREPARE stmt_add_description;
+
 SET @missing_list_price := (
     SELECT COUNT(*)
     FROM information_schema.COLUMNS

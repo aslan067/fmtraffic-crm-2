@@ -57,7 +57,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 - Her güncellemeden sonra `database/migrations.sql` dosyasını mevcut veritabanına tekrar uygulayın. Böylece ürün kodu ve ürün grubu gibi kolonlar geride kalmaz.
 - `products` veya `users` tabloları güncel şema ile uyumlu değilse SQL sorguları `p.code` / `p.product_group_id` kolonlarını bulamaz ve 500 hatası üretir.
 - Super admin mimarisi gereği `users.company_id` alanı **NULL** olabilir; foreign key kısıtları `ON DELETE SET NULL` olacak şekilde ayarlanmalıdır. Migration dosyası bu uyumu otomatik hale getirir.
-- Bu düzeltme p.code SQL hatasını kalıcı olarak çözer.
+- Bu düzeltme p.code / p.description SQL hatalarını kalıcı olarak çözer.
 
 ## Bilinen Kurulum Gereksinimleri
 - **Super Admin hesabı manuel olarak oluşturulmalıdır.** Kurulumdan sonra `is_super_admin = 1` olacak şekilde bir kullanıcı ekleyin veya güncelleyin. Örnek SQL:
