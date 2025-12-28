@@ -30,7 +30,7 @@
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
 
         <label for="type">Cari Tipi</label>
-        <select id="type" name="type" required>
+        <select id="type" name="cari_type" required>
             <option value="">Seçiniz</option>
             <option value="customer">Müşteri</option>
             <option value="supplier">Tedarikçi</option>
@@ -40,21 +40,11 @@
         <label for="name">Cari Adı</label>
         <input id="name" name="name" type="text" required>
 
-        <label for="tax_office">Vergi Dairesi</label>
-        <input id="tax_office" name="tax_office" type="text">
+        <label for="phone">Telefon</label>
+        <input id="phone" name="phone" type="text">
 
-        <label for="tax_number">Vergi Numarası</label>
-        <input id="tax_number" name="tax_number" type="text">
-
-        <h4>Temel İletişim (opsiyonel)</h4>
-        <label for="contact_name">İlgili Kişi</label>
-        <input id="contact_name" name="contact_name" type="text">
-
-        <label for="contact_email">E-posta</label>
-        <input id="contact_email" name="contact_email" type="email">
-
-        <label for="contact_phone">Telefon</label>
-        <input id="contact_phone" name="contact_phone" type="text">
+        <label for="email">E-posta</label>
+        <input id="email" name="email" type="email">
 
         <div class="actions">
             <button type="submit">Kaydet</button>

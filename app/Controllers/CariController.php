@@ -5,8 +5,8 @@ namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\Exceptions\DatabaseConnectionException;
 use App\Models\Cari;
-use App\Models\Contact;
 use App\Services\LimitService;
+use PDOException;
 use Throwable;
 
 class CariController
@@ -20,12 +20,16 @@ class CariController
 
     public function index(): void
     {
-        $companyId = $this->requireCompanyContext('/caris');
+        $isSuperAdmin = Auth::isSuperAdmin();
+        $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
 
         try {
-            $caris = Cari::allByCompany($companyId);
+            $caris = Cari::all($companyId);
         } catch (DatabaseConnectionException $e) {
             $this->handleDatabaseIssue($e, '/login');
+            return;
+        } catch (PDOException $e) {
+            $this->handleQueryFailure($e, '/caris');
             return;
         } catch (Throwable $e) {
             $this->handleUnexpected($e, '/caris');
@@ -53,16 +57,13 @@ class CariController
 
         $companyId = $this->requireCompanyContext('/caris/create');
 
-        $type = trim($_POST['type'] ?? '');
+        $cariType = trim($_POST['cari_type'] ?? '');
         $name = trim($_POST['name'] ?? '');
-        $taxOffice = trim($_POST['tax_office'] ?? '');
-        $taxNumber = trim($_POST['tax_number'] ?? '');
-        $contactName = trim($_POST['contact_name'] ?? '');
-        $contactEmail = trim($_POST['contact_email'] ?? '');
-        $contactPhone = trim($_POST['contact_phone'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $email = trim($_POST['email'] ?? '');
 
         $allowedTypes = ['customer', 'supplier', 'both'];
-        if ($name === '' || !in_array($type, $allowedTypes, true)) {
+        if ($name === '' || !in_array($cariType, $allowedTypes, true)) {
             setFlash('error', 'Cari tipi ve ad bilgisi zorunludur.');
             redirect('/caris/create');
         }
@@ -75,20 +76,17 @@ class CariController
 
             $cariId = Cari::create([
                 'company_id' => $companyId,
-                'type' => $type,
+                'cari_type' => $cariType,
                 'name' => $name,
-                'tax_office' => $taxOffice !== '' ? $taxOffice : null,
-                'tax_number' => $taxNumber !== '' ? $taxNumber : null,
+                'phone' => $phone !== '' ? $phone : null,
+                'email' => $email !== '' ? $email : null,
                 'status' => 'active',
-            ]);
-
-            Contact::upsertPrimary($cariId, [
-                'name' => $contactName,
-                'email' => $contactEmail,
-                'phone' => $contactPhone,
             ]);
         } catch (DatabaseConnectionException $e) {
             $this->handleDatabaseIssue($e, '/caris/create');
+            return;
+        } catch (PDOException $e) {
+            $this->handleQueryFailure($e, '/caris/create');
             return;
         } catch (Throwable $e) {
             $this->handleUnexpected($e, '/caris/create');
@@ -101,14 +99,17 @@ class CariController
 
     public function edit($id): void
     {
-        $companyId = $this->requireCompanyContext('/caris');
+        $isSuperAdmin = Auth::isSuperAdmin();
+        $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
         $cariId = (int) $id;
 
         try {
-            $cari = Cari::findByIdForCompany($cariId, $companyId);
-            $contact = Contact::findPrimaryByCari($cariId);
+            $cari = Cari::findById($cariId, $companyId);
         } catch (DatabaseConnectionException $e) {
             $this->handleDatabaseIssue($e, '/caris');
+            return;
+        } catch (PDOException $e) {
+            $this->handleQueryFailure($e, '/caris');
             return;
         } catch (Throwable $e) {
             $this->handleUnexpected($e, '/caris');
@@ -121,7 +122,7 @@ class CariController
         }
 
         $flash = getFlash();
-        view('cari/edit', ['cari' => $cari, 'contact' => $contact, 'flash' => $flash]);
+        view('cari/edit', ['cari' => $cari, 'flash' => $flash]);
     }
 
     public function update($id): void
@@ -132,48 +133,45 @@ class CariController
             redirect('/caris');
         }
 
-        $companyId = $this->requireCompanyContext('/caris');
+        $isSuperAdmin = Auth::isSuperAdmin();
+        $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
         $cariId = (int) $id;
 
-        $type = trim($_POST['type'] ?? '');
+        $cariType = trim($_POST['cari_type'] ?? '');
         $name = trim($_POST['name'] ?? '');
-        $taxOffice = trim($_POST['tax_office'] ?? '');
-        $taxNumber = trim($_POST['tax_number'] ?? '');
         $status = trim($_POST['status'] ?? 'active');
-        $contactName = trim($_POST['contact_name'] ?? '');
-        $contactEmail = trim($_POST['contact_email'] ?? '');
-        $contactPhone = trim($_POST['contact_phone'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $email = trim($_POST['email'] ?? '');
 
         $allowedTypes = ['customer', 'supplier', 'both'];
         $allowedStatus = ['active', 'passive'];
 
-        if ($name === '' || !in_array($type, $allowedTypes, true) || !in_array($status, $allowedStatus, true)) {
+        if ($name === '' || !in_array($cariType, $allowedTypes, true) || !in_array($status, $allowedStatus, true)) {
             setFlash('error', 'Cari tipi, ad ve durum bilgileri zorunludur.');
             redirect('/caris/' . $cariId . '/edit');
         }
 
         try {
-            $existing = Cari::findByIdForCompany($cariId, $companyId);
+            $existing = Cari::findById($cariId, $companyId);
             if (!$existing) {
                 setFlash('error', 'Cari bulunamadı veya erişim yetkiniz yok.');
                 redirect('/caris');
             }
 
-            Cari::update($cariId, $companyId, [
-                'type' => $type,
-                'name' => $name,
-                'tax_office' => $taxOffice !== '' ? $taxOffice : null,
-                'tax_number' => $taxNumber !== '' ? $taxNumber : null,
-                'status' => $status,
-            ]);
+            $targetCompanyId = (int) $existing['company_id'];
 
-            Contact::upsertPrimary($cariId, [
-                'name' => $contactName,
-                'email' => $contactEmail,
-                'phone' => $contactPhone,
+            Cari::update($cariId, $targetCompanyId, [
+                'cari_type' => $cariType,
+                'name' => $name,
+                'phone' => $phone !== '' ? $phone : null,
+                'email' => $email !== '' ? $email : null,
+                'status' => $status,
             ]);
         } catch (DatabaseConnectionException $e) {
             $this->handleDatabaseIssue($e, '/caris/' . $cariId . '/edit');
+            return;
+        } catch (PDOException $e) {
+            $this->handleQueryFailure($e, '/caris/' . $cariId . '/edit');
             return;
         } catch (Throwable $e) {
             $this->handleUnexpected($e, '/caris/' . $cariId . '/edit');
@@ -192,13 +190,23 @@ class CariController
             redirect('/caris');
         }
 
-        $companyId = $this->requireCompanyContext('/caris');
+        $isSuperAdmin = Auth::isSuperAdmin();
+        $companyId = $isSuperAdmin ? null : $this->requireCompanyContext('/caris');
         $cariId = (int) $id;
 
         try {
-            Cari::deactivate($cariId, $companyId);
+            $existing = Cari::findById($cariId, $companyId);
+            if (!$existing) {
+                setFlash('error', 'Cari bulunamadı veya erişim yetkiniz yok.');
+                redirect('/caris');
+            }
+
+            Cari::deactivate($cariId, (int) $existing['company_id']);
         } catch (DatabaseConnectionException $e) {
             $this->handleDatabaseIssue($e, '/caris');
+            return;
+        } catch (PDOException $e) {
+            $this->handleQueryFailure($e, '/caris');
             return;
         } catch (Throwable $e) {
             $this->handleUnexpected($e, '/caris');
@@ -233,6 +241,13 @@ class CariController
     {
         error_log('Unexpected cari error: ' . $e->getMessage());
         setFlash('error', 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+        redirect($redirectPath);
+    }
+
+    private function handleQueryFailure(PDOException $e, string $redirectPath): void
+    {
+        error_log('Cari SQL error: ' . $e->getMessage());
+        setFlash('error', 'İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.');
         redirect($redirectPath);
     }
 }

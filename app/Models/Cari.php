@@ -7,33 +7,39 @@ use PDO;
 
 class Cari
 {
-    public static function allByCompany(int $companyId): array
+    public static function all(?int $companyId = null): array
     {
         $pdo = DB::getConnection();
-        $stmt = $pdo->prepare(
-            'SELECT id, company_id, type, name, tax_office, tax_number, status, created_at
-             FROM caris
-             WHERE company_id = :company_id
-             ORDER BY created_at DESC'
-        );
-        $stmt->execute([':company_id' => $companyId]);
+        $query = 'SELECT id, company_id, name, cari_type, phone, email, status, created_at FROM caris';
+
+        if ($companyId !== null) {
+            $query .= ' WHERE company_id = :company_id';
+        }
+
+        $query .= ' ORDER BY created_at DESC';
+
+        $stmt = $pdo->prepare($query);
+        $params = $companyId !== null ? [':company_id' => $companyId] : [];
+        $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function findByIdForCompany(int $id, int $companyId): ?array
+    public static function findById(int $id, ?int $companyId = null): ?array
     {
         $pdo = DB::getConnection();
-        $stmt = $pdo->prepare(
-            'SELECT id, company_id, type, name, tax_office, tax_number, status, created_at
-             FROM caris
-             WHERE id = :id AND company_id = :company_id
-             LIMIT 1'
-        );
-        $stmt->execute([
-            ':id' => $id,
-            ':company_id' => $companyId,
-        ]);
+        $query = 'SELECT id, company_id, name, cari_type, phone, email, status, created_at FROM caris WHERE id = :id';
+        $params = [':id' => $id];
+
+        if ($companyId !== null) {
+            $query .= ' AND company_id = :company_id';
+            $params[':company_id'] = $companyId;
+        }
+
+        $query .= ' LIMIT 1';
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
 
         $record = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -44,16 +50,16 @@ class Cari
     {
         $pdo = DB::getConnection();
         $stmt = $pdo->prepare(
-            'INSERT INTO caris (company_id, type, name, tax_office, tax_number, status)
-             VALUES (:company_id, :type, :name, :tax_office, :tax_number, :status)'
+            'INSERT INTO caris (company_id, name, cari_type, phone, email, status)
+             VALUES (:company_id, :name, :cari_type, :phone, :email, :status)'
         );
 
         $stmt->execute([
             ':company_id' => $data['company_id'],
-            ':type' => $data['type'],
             ':name' => $data['name'],
-            ':tax_office' => $data['tax_office'] ?? null,
-            ':tax_number' => $data['tax_number'] ?? null,
+            ':cari_type' => $data['cari_type'],
+            ':phone' => $data['phone'] ?? null,
+            ':email' => $data['email'] ?? null,
             ':status' => $data['status'] ?? 'active',
         ]);
 
@@ -65,10 +71,10 @@ class Cari
         $pdo = DB::getConnection();
         $stmt = $pdo->prepare(
             'UPDATE caris
-             SET type = :type,
-                 name = :name,
-                 tax_office = :tax_office,
-                 tax_number = :tax_number,
+             SET name = :name,
+                 cari_type = :cari_type,
+                 phone = :phone,
+                 email = :email,
                  status = :status
              WHERE id = :id AND company_id = :company_id'
         );
@@ -76,10 +82,10 @@ class Cari
         $stmt->execute([
             ':id' => $id,
             ':company_id' => $companyId,
-            ':type' => $data['type'],
             ':name' => $data['name'],
-            ':tax_office' => $data['tax_office'] ?? null,
-            ':tax_number' => $data['tax_number'] ?? null,
+            ':cari_type' => $data['cari_type'],
+            ':phone' => $data['phone'] ?? null,
+            ':email' => $data['email'] ?? null,
             ':status' => $data['status'] ?? 'active',
         ]);
     }

@@ -44,8 +44,8 @@
                 <tr>
                     <th>Ad</th>
                     <th>Tip</th>
-                    <th>Vergi Dairesi</th>
-                    <th>Vergi No</th>
+                    <th>Telefon</th>
+                    <th>E-posta</th>
                     <th>Durum</th>
                     <th>Oluşturulma</th>
                     <th>İşlemler</th>
@@ -55,9 +55,9 @@
                 <?php foreach ($caris as $cari): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($cari['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                        <td><?php echo htmlspecialchars($cari['type'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                        <td><?php echo htmlspecialchars($cari['tax_office'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
-                        <td><?php echo htmlspecialchars($cari['tax_number'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars($cari['cari_type'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars($cari['phone'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars($cari['email'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><span class="badge <?php echo htmlspecialchars($cari['status'] ?? 'active', ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($cari['status'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span></td>
                         <td><?php echo htmlspecialchars($cari['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td class="actions">
