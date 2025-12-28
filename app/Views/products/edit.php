@@ -55,6 +55,22 @@
         <label for="description">Açıklama</label>
         <textarea id="description" name="description" rows="3"><?php echo htmlspecialchars($product['description'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
 
+        <label for="category">Ürün Kategorisi</label>
+        <input id="category" name="category" type="text" value="<?php echo htmlspecialchars($product['category'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Örn: Elektronik">
+
+        <label for="currency">Para Birimi</label>
+        <select id="currency" name="currency">
+            <option value="TRY" <?php echo (($product['currency'] ?? 'TRY') === 'TRY') ? 'selected' : ''; ?>>TRY</option>
+            <option value="USD" <?php echo (($product['currency'] ?? '') === 'USD') ? 'selected' : ''; ?>>USD</option>
+            <option value="EUR" <?php echo (($product['currency'] ?? '') === 'EUR') ? 'selected' : ''; ?>>EUR</option>
+        </select>
+
+        <label for="unit">Birim</label>
+        <input id="unit" name="unit" type="text" value="<?php echo htmlspecialchars($product['unit'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="Örn: Adet, Koli, Metre">
+
+        <label for="image_url">Görsel URL</label>
+        <input id="image_url" name="image_url" type="text" value="<?php echo htmlspecialchars($product['image_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://...">
+
         <label for="list_price">Liste Fiyatı</label>
         <input id="list_price" name="list_price" type="number" min="0" step="0.01" value="<?php echo htmlspecialchars($product['list_price'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
 

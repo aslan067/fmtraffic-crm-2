@@ -147,6 +147,10 @@ CREATE TABLE IF NOT EXISTS products (
     code VARCHAR(100) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT NULL,
+    category VARCHAR(100) NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'TRY',
+    unit VARCHAR(50) NULL,
+    image_url VARCHAR(255) NULL,
     list_price DECIMAL(15,2) NOT NULL,
     stock_quantity INT UNSIGNED NOT NULL DEFAULT 0,
     status ENUM('active', 'passive') NOT NULL DEFAULT 'active',
@@ -199,6 +203,62 @@ SET @add_description_sql := IF(
 PREPARE stmt_add_description FROM @add_description_sql;
 EXECUTE stmt_add_description;
 DEALLOCATE PREPARE stmt_add_description;
+
+SET @missing_category := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'category'
+);
+SET @add_category_sql := IF(
+    @missing_category = 0,
+    'ALTER TABLE products ADD COLUMN category VARCHAR(100) NULL AFTER description',
+    'SELECT 1'
+);
+PREPARE stmt_add_category FROM @add_category_sql;
+EXECUTE stmt_add_category;
+DEALLOCATE PREPARE stmt_add_category;
+
+SET @missing_currency := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'currency'
+);
+SET @add_currency_sql := IF(
+    @missing_currency = 0,
+    'ALTER TABLE products ADD COLUMN currency VARCHAR(10) NOT NULL DEFAULT ''TRY'' AFTER category',
+    'SELECT 1'
+);
+PREPARE stmt_add_currency FROM @add_currency_sql;
+EXECUTE stmt_add_currency;
+DEALLOCATE PREPARE stmt_add_currency;
+
+SET @missing_unit := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'unit'
+);
+SET @add_unit_sql := IF(
+    @missing_unit = 0,
+    'ALTER TABLE products ADD COLUMN unit VARCHAR(50) NULL AFTER currency',
+    'SELECT 1'
+);
+PREPARE stmt_add_unit FROM @add_unit_sql;
+EXECUTE stmt_add_unit;
+DEALLOCATE PREPARE stmt_add_unit;
+
+SET @missing_image_url := (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'image_url'
+);
+SET @add_image_url_sql := IF(
+    @missing_image_url = 0,
+    'ALTER TABLE products ADD COLUMN image_url VARCHAR(255) NULL AFTER unit',
+    'SELECT 1'
+);
+PREPARE stmt_add_image_url FROM @add_image_url_sql;
+EXECUTE stmt_add_image_url;
+DEALLOCATE PREPARE stmt_add_image_url;
 
 SET @missing_list_price := (
     SELECT COUNT(*)
@@ -306,6 +366,7 @@ INSERT INTO permissions (`key`, description) VALUES
 ('product.view', 'Ürünleri görüntüleme'),
 ('product.create', 'Ürün oluşturma'),
 ('product.edit', 'Ürün düzenleme'),
+('product.deactivate', 'Ürün pasife alma'),
 ('sale.view', 'Satışları görüntüleme'),
 ('sale.create', 'Satış oluşturma'),
 ('cari.view', 'Carileri görüntüleme'),
@@ -342,6 +403,13 @@ ON DUPLICATE KEY UPDATE feature_key = VALUES(feature_key);
 -- Example role-permission mapping
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.name = 'Admin';
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+JOIN permissions p ON p.`key` IN ('product.edit', 'product.deactivate')
+WHERE r.name = 'Admin'
+ON DUPLICATE KEY UPDATE permission_id = permission_id;
 
 -- Assign default admin role to seeded user
 INSERT INTO user_roles (user_id, role_id)

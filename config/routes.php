@@ -22,7 +22,7 @@ return [
     ['method' => 'POST', 'path' => '/products/store', 'handler' => [ProductController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.create']],
     ['method' => 'GET', 'path' => '/products/{id}/edit', 'handler' => [ProductController::class, 'edit'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.edit']],
     ['method' => 'POST', 'path' => '/products/{id}/update', 'handler' => [ProductController::class, 'update'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.edit']],
-    ['method' => 'POST', 'path' => '/products/{id}/deactivate', 'handler' => [ProductController::class, 'deactivate'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.edit']],
+    ['method' => 'POST', 'path' => '/products/{id}/deactivate', 'handler' => [ProductController::class, 'deactivate'], 'middleware' => [AuthMiddleware::class, 'feature:product', 'permission:product.deactivate']],
     ['method' => 'GET', 'path' => '/caris', 'handler' => [CariController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'feature:cari', 'permission:cari.view']],
     ['method' => 'GET', 'path' => '/caris/create', 'handler' => [CariController::class, 'create'], 'middleware' => [AuthMiddleware::class, 'feature:cari', 'permission:cari.create']],
     ['method' => 'POST', 'path' => '/caris/store', 'handler' => [CariController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'feature:cari', 'permission:cari.create']],

@@ -78,6 +78,11 @@ Migration dosyası şu admin kullanıcısını ekler:
 - **Limit & feature ilişkisi:** Tüm ürün rotaları `auth` + `feature:product` + ilgili `permission:product.*` middleware’leri ile korunur. `LimitService::canAddProduct(company_id)` kontrolü `store` işleminde çalışır; limit doluysa “Ürün limitiniz dolmuştur. Paket yükseltiniz.” mesajı gösterilir ve kayıt yapılmaz.
 - **Neden pasife alma var:** Silme yerine statü `passive` olarak güncellenir; geçmiş teklif/satış/satınalma kayıtlarıyla ilişki kopmaz, audit trail korunur.
 
+## Ürün Yönetimi Genişletmeleri
+- Yeni alanlar: `category (VARCHAR(100) NULL)`, `currency (VARCHAR(10) NOT NULL DEFAULT 'TRY')`, `unit (VARCHAR(50) NULL)`, `image_url (VARCHAR(255) NULL)` kolonları `products` tablosuna eklendi.
+- Super admin farkı: `Auth::isSuperAdmin()` durumunda ürün listeleri firma filtresi olmadan tüm ürünleri döndürür; firma adminleri mevcut `company_id` filtresiyle çalışmaya devam eder.
+- Permission gereksinimleri: `product.edit` ve `product.deactivate` izinleri admin rolüne eklenmiştir; liste, düzenleme ve pasife alma butonları ilgili permission’a göre görünür.
+
 ## Cari Yönetimi (MVP)
 - Tablolar:
   - `caris`: `type (customer|supplier|both)`, `name`, `tax_office`, `tax_number`, `status (active|passive)`, `company_id`
@@ -94,7 +99,8 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `POST /logout`: Oturum sonlandırma (CSRF korumalı)
 - `GET /products`: Oturum + `permission:product.view` + `feature:product` kontrolü ile korunur
 - `GET /products/create` & `POST /products/store`: Oturum + `feature:product` + `permission:product.create`
-- `GET /products/{id}/edit` & `POST /products/{id}/update` & `POST /products/{id}/deactivate`: Oturum + `feature:product` + `permission:product.edit`
+- `GET /products/{id}/edit` & `POST /products/{id}/update`: Oturum + `feature:product` + `permission:product.edit`
+- `POST /products/{id}/deactivate`: Oturum + `feature:product` + `permission:product.deactivate`
 - `GET /caris`: Oturum + `feature:cari` + `permission:cari.view`
 - `GET /caris/create` & `POST /caris/store`: Oturum + `feature:cari` + `permission:cari.create`
 - `GET /caris/{id}/edit` & `POST /caris/{id}/update` & `POST /caris/{id}/deactivate`: Oturum + `feature:cari` + `permission:cari.edit`
