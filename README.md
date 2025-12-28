@@ -175,6 +175,14 @@ Migration dosyası şu admin kullanıcısını ekler:
 - CSRF hataları hem login hem CRUD formlarında yakalanır ve kullanıcıya net mesaj gösterilir.
 - DB bağlantı hataları artık fatal çıkış yerine yakalanabilir exception üretir; login ekranında kırmızı uyarı olarak gösterilir.
 
+## Teklif Yönetimi – MVP (Faz 1)
+- **Tek para birimi kuralı:** Her teklif tek bir para birimine sahiptir; satır bazlı para birimi desteği yoktur.
+- **Cari bağımlılığı:** Teklif oluştururken cari seçimi zorunludur ve teklif firmaya bağlıdır.
+- **Ürün satırları ve hesaplama:** Satır neti `miktar * birim fiyat`, iskonto (oran veya tutar) netten düşülür, KDV iskonto sonrası tutar üzerinden hesaplanır, satır toplamı KDV dahil tutulur. Teklif toplamı satır toplamlarının toplamıdır.
+- **Durum yönetimi:** Teklifler `draft → sent/approved/rejected` durumlarıyla yönetilir; durum güncelleme yetkisi `offer.update_status` ile korunur.
+- **Erişim zinciri:** Modül anahtarı `offers`; module config'te feature `offer`, base permission `offer.view`, aksiyon izinleri `offer.create` ve `offer.update_status` olarak tanımlıdır. Admin ve Sales rollerine varsayılan izinler eklenir.
+- **UI kapsamı:** Düz HTML listesi, cari + para birimi seçimi ve çoklu ürün satırı olan oluşturma formu, teklif detay ve durum güncelleme formu sağlanır. PDF, mail ve satışa dönüşüm bu fazda yoktur.
+
 ## Geliştirme Notları
 - PHP 8.1 ile uyumludur.
 - Ek tablo ve modüller için aynı multi-tenant desenini (company_id zorunlu) sürdürün.

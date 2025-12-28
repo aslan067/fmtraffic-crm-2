@@ -43,6 +43,56 @@ class Permission
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Ensure a permission exists and is attached to the given global roles.
+     *
+     * @param array<int, string> $roleNames
+     */
+    public static function ensurePermissionWithRoles(string $key, ?string $description, array $roleNames): void
+    {
+        $pdo = DB::getConnection();
+
+        $stmt = $pdo->prepare(
+            'INSERT INTO permissions (`key`, description) VALUES (:key, :description)
+             ON DUPLICATE KEY UPDATE description = VALUES(description)'
+        );
+        $stmt->execute([
+            ':key' => $key,
+            ':description' => $description,
+        ]);
+
+        $permission = self::findByKey($key);
+        if (!$permission) {
+            return;
+        }
+
+        if (empty($roleNames)) {
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($roleNames), '?'));
+        $roleStmt = $pdo->prepare(
+            'SELECT id FROM roles WHERE company_id IS NULL AND name IN (' . $placeholders . ')'
+        );
+        $roleStmt->execute($roleNames);
+        $roles = $roleStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($roles)) {
+            return;
+        }
+
+        $mappingStmt = $pdo->prepare(
+            'INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (:role_id, :permission_id)'
+        );
+
+        foreach ($roles as $roleId) {
+            $mappingStmt->execute([
+                ':role_id' => $roleId,
+                ':permission_id' => $permission['id'],
+            ]);
+        }
+    }
+
     public static function getByRole(int $roleId): array
     {
         $pdo = DB::getConnection();
