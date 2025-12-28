@@ -6,6 +6,7 @@ use App\Core\Auth;
 use App\Core\DB;
 use App\Core\Exceptions\DatabaseConnectionException;
 use App\Models\Cari;
+use App\Models\Company;
 use App\Models\Offer;
 use App\Models\OfferItem;
 use App\Models\Permission;
@@ -40,12 +41,60 @@ class OfferController
         view('offers/index', ['offers' => $offers, 'flash' => $flash, 'isSuperAdmin' => $isSuperAdmin]);
     }
 
+    public function selectCompanyForm(): void
+    {
+        $this->ensureSuperAdmin();
+
+        $flash = getFlash();
+        $companies = Company::all();
+
+        view('offers/select_company', [
+            'companies' => $companies,
+            'flash' => $flash,
+            'selectedCompanyId' => Auth::actingCompanyId(),
+        ]);
+    }
+
+    public function selectCompany(): void
+    {
+        $this->ensureSuperAdmin();
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verify_csrf_token($token)) {
+            setFlash('error', 'Geçersiz oturum doğrulaması.');
+            redirect('/offers/select-company');
+        }
+
+        $companyId = isset($_POST['company_id']) ? (int) $_POST['company_id'] : 0;
+
+        if ($companyId <= 0) {
+            setFlash('error', 'Lütfen bir firma seçin.');
+            redirect('/offers/select-company');
+        }
+
+        $company = Company::findById($companyId);
+        if (!$company) {
+            setFlash('error', 'Firma bulunamadı.');
+            redirect('/offers/select-company');
+        }
+
+        Auth::setActingCompany($companyId, (string) ($company['name'] ?? ''));
+        setFlash('success', 'Firma seçimi uygulandı. Teklif oluşturma işlemlerinde bu firma kullanılacak.');
+        redirect('/offers/create');
+    }
+
     public function create(): void
     {
         $this->assertModuleAccess('offers');
         $this->assertPermission('offer.create', '/offers');
+        $isSuperAdmin = Auth::isSuperAdmin();
         $user = Auth::user();
         $companyId = $user['company_id'] ?? null;
+
+        if ($isSuperAdmin && $companyId === null) {
+            setFlash('error', 'Teklif oluşturmak için önce firma seçmelisiniz.');
+            redirect('/offers/select-company');
+        }
 
         if ($companyId === null) {
             setFlash('error', 'Teklif oluşturmak için bir firma bağlamı gereklidir.');
@@ -68,6 +117,8 @@ class OfferController
             'caris' => $caris,
             'products' => $products,
             'flash' => $flash,
+            'isSuperAdmin' => $isSuperAdmin,
+            'companyName' => (string) ($user['company_name'] ?? ''),
         ]);
     }
 
@@ -82,7 +133,7 @@ class OfferController
 
         $this->assertPermission('offer.create', '/offers');
         $user = Auth::user();
-        $currentCompanyId = $user['company_id'] ?? null;
+        $currentCompanyId = $this->requireCompanyContext('/offers/select-company');
         $userId = $user['id'] ?? null;
 
         $cariId = (int) ($_POST['cari_id'] ?? 0);
@@ -333,7 +384,10 @@ class OfferController
         $companyId = $user['company_id'] ?? null;
 
         if ($companyId === null) {
-            setFlash('error', 'Bu işlem için bir firma bağlamı gereklidir.');
+            $message = Auth::isSuperAdmin()
+                ? 'Firma seçilmedi. Lütfen önce bir firma seçin.'
+                : 'Bu işlem için bir firma bağlamı gereklidir.';
+            setFlash('error', $message);
             redirect($redirectPath);
         }
 
@@ -374,8 +428,9 @@ class OfferController
         }
 
         if (!Auth::hasPermission($permissionKey)) {
-            setFlash('error', 'Bu işlem için yetkiniz yok.');
-            redirect($redirectPath);
+            http_response_code(403);
+            echo 'Bu işlem için yetkiniz yok.';
+            exit;
         }
     }
 
@@ -387,6 +442,15 @@ class OfferController
             Permission::ensurePermissionWithRoles('offer.update_status', 'Teklif durumu güncelleme', ['Admin', 'Sales']);
         } catch (Throwable $e) {
             error_log('Offer permission seed error: ' . $e->getMessage());
+        }
+    }
+
+    private function ensureSuperAdmin(): void
+    {
+        if (!Auth::isSuperAdmin()) {
+            http_response_code(403);
+            echo 'Bu sayfaya yalnızca Super Admin erişebilir.';
+            exit;
         }
     }
 }

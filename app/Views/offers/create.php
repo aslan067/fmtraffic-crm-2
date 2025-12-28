@@ -25,6 +25,9 @@
 <div class="container">
     <div class="card">
         <h2>Yeni Teklif</h2>
+        <?php if (!empty($isSuperAdmin)): ?>
+            <p style="color:#0d6efd; margin-top:4px;">Aktif Firma: <strong><?php echo htmlspecialchars($companyName ?? '-', ENT_QUOTES, 'UTF-8'); ?></strong> — <a href="/offers/select-company">Firma değiştir</a></p>
+        <?php endif; ?>
 
         <?php if (!empty($flash['success'])): ?>
             <div class="flash flash-success"><?php echo htmlspecialchars($flash['success'], ENT_QUOTES, 'UTF-8'); ?></div>

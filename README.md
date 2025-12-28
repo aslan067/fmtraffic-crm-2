@@ -187,3 +187,8 @@ Migration dosyası şu admin kullanıcısını ekler:
 - PHP 8.1 ile uyumludur.
 - Ek tablo ve modüller için aynı multi-tenant desenini (company_id zorunlu) sürdürün.
 - Bu aşamadan sonra sistem gerçek SaaS davranışı gösterir; aktif abonelik ve paket limitleri olmadan kullanıcı/ürün/cari ekleme engellenir.
+
+## Teklif Yönetimi – Yetki & Super Admin
+- **Kim oluşturabilir?** `offer.create` izni olan Admin/Sales kullanıcıları ile Super Admin teklif oluşturabilir. Modül giriş noktası `offer.view` izniyle korunur; yetki DB’de mevcutsa erişim engellenmez.
+- **Super admin test modu:** Super Admin firma seçme ekranı (`/offers/select-company`) üzerinden bağlam belirler; seçilen firma sadece kendi oturumunda geçerli olur ve teklif oluşturma/güncelleme işlemleri bu firmaya göre çalışır.
+- **Firma bağlamı:** Firma seçimi yapılmadan teklif oluşturma denemeleri yönlendirilir ve açıklama mesajıyla engellenir. Listeleme Super Admin için tüm firmaları kapsar, Admin/Sales kullanıcıları kendi firmalarıyla sınırlıdır.
