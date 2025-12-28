@@ -344,6 +344,38 @@ CREATE TABLE IF NOT EXISTS caris (
     INDEX idx_caris_company (company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS offers (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    company_id INT UNSIGNED NOT NULL,
+    cari_id INT UNSIGNED NOT NULL,
+    currency ENUM('TRY', 'USD', 'EUR') NOT NULL DEFAULT 'TRY',
+    status ENUM('draft', 'sent', 'approved', 'rejected') NOT NULL DEFAULT 'draft',
+    total_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+    created_by INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_offers_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    CONSTRAINT fk_offers_cari FOREIGN KEY (cari_id) REFERENCES caris(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_offers_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_offers_company (company_id),
+    INDEX idx_offers_cari (cari_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS offer_items (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    offer_id INT UNSIGNED NOT NULL,
+    product_id INT UNSIGNED NULL,
+    product_name VARCHAR(255) NOT NULL,
+    quantity DECIMAL(12,2) NOT NULL,
+    unit_price DECIMAL(15,2) NOT NULL,
+    discount_rate DECIMAL(5,2) NULL,
+    discount_amount DECIMAL(15,2) NULL,
+    vat_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    line_total DECIMAL(15,2) NOT NULL,
+    CONSTRAINT fk_offer_items_offer FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_offer_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
+    INDEX idx_offer_items_offer (offer_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Backward compatibility for caris table
 SET @has_cari_type := (
     SELECT COUNT(*) FROM information_schema.COLUMNS
