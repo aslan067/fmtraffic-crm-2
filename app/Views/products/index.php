@@ -2,10 +2,11 @@
 $title = 'Ürün Yönetimi';
 ob_start();
 ?>
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div class="page-hero mb-4">
     <div>
-        <p class="text-muted small mb-1">Ürünleri yönetin, fiyatları ve stokları izleyin.</p>
-        <h2 class="h5 mb-0">Ürünler</h2>
+        <p class="eyebrow text-uppercase mb-1">Ürünler</p>
+        <h2 class="h4 mb-1">Ürün Yönetimi</h2>
+        <p class="text-muted mb-0">Ürünleri yönetin, fiyatları ve stokları izleyin.</p>
     </div>
     <?php if (canAccess('product', 'product.create')): ?>
         <a href="/products/create" class="btn btn-primary d-flex align-items-center gap-2">
@@ -25,8 +26,14 @@ ob_start();
 <div class="row g-4">
     <div class="col-12 col-xl-8">
         <div class="card h-100">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h3 class="h6 mb-0">Ürün Listesi</h3>
+            <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="pill-icon bg-primary-subtle text-primary"><i class="bi bi-box-seam"></i></div>
+                    <div>
+                        <div class="text-uppercase small text-muted mb-0">Liste</div>
+                        <h3 class="h6 mb-0">Ürün Listesi</h3>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($products)): ?>
@@ -89,8 +96,12 @@ ob_start();
 
     <div class="col-12 col-xl-4">
         <div class="card h-100">
-            <div class="card-header bg-white">
-                <h3 class="h6 mb-0">Ürün Grupları</h3>
+            <div class="card-header bg-white d-flex align-items-center gap-2">
+                <div class="pill-icon bg-secondary-subtle text-secondary"><i class="bi bi-collection"></i></div>
+                <div>
+                    <div class="text-uppercase small text-muted mb-0">Gruplar</div>
+                    <h3 class="h6 mb-0">Ürün Grupları</h3>
+                </div>
             </div>
             <div class="card-body">
                 <p class="text-muted small">Gruplar ürünleri kategorize eder. Yeni grup eklemek için ürün oluştururken “Yeni grup adı” alanını kullanabilirsiniz.</p>

@@ -22,6 +22,10 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - Tüm sayfalar için ortak header ve içerik alanı
 - ModuleRegistry tabanlı, yetki kontrollü sidebar menü
 
+## Dashboard UX – Paraşüt Referansı
+- Finans odaklı admin panel yaklaşımı
+- Placeholder grafik kullanımı
+
 ## C1 – Profesyonel Admin UI
 - Bootstrap admin layout
 - Standart sayfa yapısı
