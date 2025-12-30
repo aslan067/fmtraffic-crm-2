@@ -1,61 +1,56 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 40px; }
-        .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        form { margin-top: 12px; }
-        button { padding: 10px 16px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>Dashboard</h2>
-    <p>Hoş geldiniz, <?php echo htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?> /
-        Firma: <?php echo htmlspecialchars($user['company_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
-
-    <div style="margin: 16px 0; padding: 12px; background: #f8f9fa; border-radius: 8px;">
-        <strong>Menü</strong>
-        <ul style="list-style: none; padding-left: 0; margin: 8px 0 0 0;">
-            <?php foreach (($modules ?? []) as $moduleKey => $moduleConfig): ?>
-                <?php
-                $route = (string) ($moduleConfig['route'] ?? '');
-                $label = (string) ($moduleConfig['label'] ?? '');
-                ?>
-                <?php if ($route !== '' && $label !== '' && canAccessModule((string) $moduleKey)): ?>
-                    <li style="margin-bottom: 6px;">
-                        <a href="<?php echo htmlspecialchars($route, ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>
-                        </a>
-                    </li>
-                <?php endif; ?>
-            <?php endforeach; ?>
-
-            <?php if (can('users.create')): ?>
-                <li style="margin-bottom: 6px;"><a href="/users/create">Kullanıcı Oluştur</a></li>
-            <?php endif; ?>
-
-            <?php if (!empty($user['is_super_admin'])): ?>
-                <li style="margin-bottom: 6px;"><a href="/super-admin/companies">Super Admin - Firma Yönetimi</a></li>
-            <?php endif; ?>
-        </ul>
+<?php
+$title = 'Dashboard';
+ob_start();
+?>
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Kontrol Paneli</p>
+        <h1>Hoş geldiniz, <?php echo htmlspecialchars($user['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h1>
+        <p class="muted">Firma: <?php echo htmlspecialchars($user['company_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
     </div>
-
-    <?php if (!empty($user['is_super_admin'])): ?>
-        <p style="color:#0d6efd;"><strong>Super Admin</strong> olarak giriş yaptınız. <a href="/super-admin/companies">Firma yönetimine git</a>.</p>
-    <?php else: ?>
-        <?php if (can('users.create')): ?>
-            <p><a href="/users/create">Kullanıcı oluştur</a> sayfasından paket limitine tabi kullanıcı ekleyebilirsiniz.</p>
-        <?php else: ?>
-            <p style="color:#6c757d;">Kullanıcı oluşturma yetkiniz veya paket özelliğiniz yok.</p>
-        <?php endif; ?>
-    <?php endif; ?>
-    <form method="POST" action="/logout">
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
-        <button type="submit">Çıkış</button>
-    </form>
 </div>
-</body>
-</html>
+
+<div class="card-grid">
+    <div class="card stat-card">
+        <div class="stat-title">Ürünler</div>
+        <div class="stat-value">—</div>
+        <p class="muted">Toplam ürün adedi placeholder.</p>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-title">Cariler</div>
+        <div class="stat-value">—</div>
+        <p class="muted">Cari özeti placeholder.</p>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-title">Teklifler</div>
+        <div class="stat-value">—</div>
+        <p class="muted">Teklif durumu placeholder.</p>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-title">Satışlar</div>
+        <div class="stat-value">—</div>
+        <p class="muted">Satış özeti placeholder.</p>
+    </div>
+</div>
+
+<?php if (!empty($user['is_super_admin'])): ?>
+    <div class="card" style="margin-top: 18px;">
+        <div class="card-header">
+            <h3 class="card-title">Super Admin</h3>
+            <a href="/super-admin/companies" class="button primary">Firma Yönetimi</a>
+        </div>
+        <p class="muted">Super Admin olarak giriş yaptınız. Firma yönetimine gidebilirsiniz.</p>
+    </div>
+<?php else: ?>
+    <div class="card" style="margin-top: 18px;">
+        <?php if (can('users.create')): ?>
+            <p><a href="/users/create" class="button">Kullanıcı oluştur</a></p>
+        <?php else: ?>
+            <p class="muted">Kullanıcı oluşturma yetkiniz veya paket özelliğiniz yok.</p>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/layout.php';
