@@ -145,4 +145,26 @@ class Permission
 
         return (bool) $stmt->fetchColumn();
     }
+
+    public static function getByUserAndCompany(int $userId, int $companyId): array
+    {
+        $pdo = DB::getConnection();
+        $stmt = $pdo->prepare(
+            'SELECT DISTINCT p.`key`
+             FROM user_roles ur
+             INNER JOIN roles r ON r.id = ur.role_id
+             INNER JOIN role_permissions rp ON rp.role_id = r.id
+             INNER JOIN permissions p ON p.id = rp.permission_id
+             WHERE ur.user_id = :user_id
+               AND (r.company_id IS NULL OR r.company_id = :company_id)
+             ORDER BY p.`key` ASC'
+        );
+
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':company_id' => $companyId,
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

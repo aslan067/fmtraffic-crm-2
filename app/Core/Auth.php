@@ -10,6 +10,7 @@ use App\Services\FeatureService;
 use App\Core\Exceptions\AuthException;
 use App\Core\Exceptions\DatabaseConnectionException;
 use App\Core\ModuleRegistry;
+use App\Core\PermissionVersion;
 use Throwable;
 
 class Auth
@@ -301,8 +302,14 @@ class Auth
     {
         $cachedCompanyId = $_SESSION['permissions_company_id'] ?? null;
         $cachedPermissions = $_SESSION['permissions'] ?? null;
+        $cachedVersion = $_SESSION['permissions_version'] ?? null;
+        $currentVersion = PermissionVersion::current();
 
-        if (!is_array($cachedPermissions) || $cachedCompanyId !== $companyId) {
+        if (
+            !is_array($cachedPermissions)
+            || $cachedCompanyId !== $companyId
+            || $cachedVersion !== $currentVersion
+        ) {
             return self::reloadPermissionCache($userId, $companyId);
         }
 
@@ -315,6 +322,7 @@ class Auth
 
         $_SESSION['permissions'] = $permissions;
         $_SESSION['permissions_company_id'] = $companyId;
+        $_SESSION['permissions_version'] = PermissionVersion::current();
 
         return $permissions;
     }
@@ -331,12 +339,23 @@ class Auth
             }
         }
 
+        // Failsafe: if no permissions were resolved for an active user, refresh directly from DB.
+        if (empty($permissions)) {
+            $directPermissions = Permission::getByUserAndCompany($userId, $companyId);
+            foreach ($directPermissions as $permission) {
+                $key = (string) ($permission['key'] ?? '');
+                if ($key !== '') {
+                    $permissions[$key] = $key;
+                }
+            }
+        }
+
         return array_values($permissions);
     }
 
     private static function clearPermissionCache(): void
     {
-        unset($_SESSION['permissions'], $_SESSION['permissions_company_id']);
+        unset($_SESSION['permissions'], $_SESSION['permissions_company_id'], $_SESSION['permissions_version']);
     }
 
     private static function normalizePermissionKey(string $key): string

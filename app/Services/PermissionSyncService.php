@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Core\DB;
 use App\Models\Permission;
+use App\Core\PermissionVersion;
 use PDO;
 use Throwable;
 
@@ -32,6 +33,8 @@ class PermissionSyncService
             return;
         }
 
+        $syncedAny = false;
+
         foreach ($config as $moduleKey => $definition) {
             if (!array_key_exists($moduleKey, $modules)) {
                 continue;
@@ -39,32 +42,38 @@ class PermissionSyncService
 
             $permissions = (array) ($definition['permissions'] ?? []);
             foreach ($permissions as $permissionDefinition) {
-                self::syncPermission((array) $permissionDefinition);
+                $syncedAny = self::syncPermission((array) $permissionDefinition) || $syncedAny;
             }
+        }
+
+        if ($syncedAny) {
+            PermissionVersion::bump();
         }
     }
 
     /**
      * @param array<string, mixed> $definition
+     * @return bool True if a new permission was created.
      */
-    private static function syncPermission(array $definition): void
+    private static function syncPermission(array $definition): bool
     {
         $key = (string) ($definition['key'] ?? '');
         if ($key === '') {
-            return;
+            return false;
         }
 
         $description = $definition['description'] ?? null;
+        $permissionExisted = Permission::findByKey($key) !== null;
 
         try {
             $permission = Permission::ensure($key, is_string($description) ? $description : null);
         } catch (Throwable $e) {
             error_log('Permission ensure failed: ' . $e->getMessage());
-            return;
+            return false;
         }
 
         if (!$permission) {
-            return;
+            return false;
         }
 
         $roles = array_filter(
@@ -73,10 +82,12 @@ class PermissionSyncService
         );
 
         if (empty($roles)) {
-            return;
+            return !$permissionExisted;
         }
 
         self::attachToRoles((int) $permission['id'], $roles);
+
+        return !$permissionExisted;
     }
 
     /**
