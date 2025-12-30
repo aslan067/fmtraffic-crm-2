@@ -2,10 +2,11 @@
 $title = 'Satışlar';
 ob_start();
 ?>
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div class="page-hero mb-4">
     <div>
-        <p class="text-muted small mb-1">Satışlarınıza ait onaylı işlemleri ve tahsilatları takip edin.</p>
-        <h2 class="h5 mb-0">Satışlar</h2>
+        <p class="eyebrow text-uppercase mb-1">Satışlar</p>
+        <h2 class="h4 mb-1">Satış İşlemleri</h2>
+        <p class="text-muted mb-0">Satışlarınıza ait onaylı işlemleri ve tahsilatları takip edin.</p>
     </div>
     <a href="/offers" class="btn btn-primary d-flex align-items-center gap-2" title="Onaylı teklifleri satışa dönüştürün">
         <i class="bi bi-plus-lg"></i>
@@ -21,8 +22,14 @@ ob_start();
 <?php endif; ?>
 
 <div class="card">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h3 class="h6 mb-0">Satış Listesi</h3>
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <div class="pill-icon bg-danger-subtle text-danger"><i class="bi bi-cash-coin"></i></div>
+            <div>
+                <div class="text-uppercase small text-muted mb-0">Liste</div>
+                <h3 class="h6 mb-0">Satış Listesi</h3>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <?php if (empty($sales)): ?>

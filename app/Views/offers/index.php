@@ -2,10 +2,11 @@
 $title = 'Teklifler';
 ob_start();
 ?>
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div class="page-hero mb-4">
     <div>
-        <p class="text-muted small mb-1">Teklif akışını yönetin, durumları ve tutarları izleyin.</p>
-        <h2 class="h5 mb-0">Teklifler</h2>
+        <p class="eyebrow text-uppercase mb-1">Teklifler</p>
+        <h2 class="h4 mb-1">Teklif Akışı</h2>
+        <p class="text-muted mb-0">Teklif akışını yönetin, durumları ve tutarları izleyin.</p>
     </div>
     <?php if (canAccess('offer', 'offer.create')): ?>
         <a href="/offers/create" class="btn btn-primary d-flex align-items-center gap-2">
@@ -23,8 +24,14 @@ ob_start();
 <?php endif; ?>
 
 <div class="card">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h3 class="h6 mb-0">Teklif Listesi</h3>
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <div class="pill-icon bg-warning-subtle text-warning"><i class="bi bi-file-earmark-text"></i></div>
+            <div>
+                <div class="text-uppercase small text-muted mb-0">Liste</div>
+                <h3 class="h6 mb-0">Teklif Listesi</h3>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <?php if (empty($offers)): ?>

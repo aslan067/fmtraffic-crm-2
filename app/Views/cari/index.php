@@ -2,10 +2,11 @@
 $title = 'Cari Yönetimi';
 ob_start();
 ?>
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div class="page-hero mb-4">
     <div>
-        <p class="text-muted small mb-1">Carilerinizin iletişim ve finansal detaylarını yönetin.</p>
-        <h2 class="h5 mb-0">Cariler</h2>
+        <p class="eyebrow text-uppercase mb-1">Cariler</p>
+        <h2 class="h4 mb-1">Cari Yönetimi</h2>
+        <p class="text-muted mb-0">Carilerinizin iletişim ve finansal detaylarını yönetin.</p>
     </div>
     <a href="/caris/create" class="btn btn-primary d-flex align-items-center gap-2">
         <i class="bi bi-plus-lg"></i>
@@ -21,8 +22,14 @@ ob_start();
 <?php endif; ?>
 
 <div class="card">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h3 class="h6 mb-0">Cari Listesi</h3>
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <div class="pill-icon bg-success-subtle text-success"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="text-uppercase small text-muted mb-0">Liste</div>
+                <h3 class="h6 mb-0">Cari Listesi</h3>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <?php if (empty($caris)): ?>
