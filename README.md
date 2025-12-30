@@ -22,6 +22,12 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - Tüm sayfalar için ortak header ve içerik alanı
 - ModuleRegistry tabanlı, yetki kontrollü sidebar menü
 
+## UI Güncellemesi – Modern SaaS Hissi
+- Layout, dashboard ve liste sayfaları yeniden düzenlendi; koyu admin hissi yerine parasüt/logo benzeri kurumsal SaaS görünümü sağlandı.
+- Renk paleti nötr tutulup turuncu vurgu eklendi, kart ve tablo başlıkları sadeleştirildi, aksiyon butonlarına hiyerarşi verildi.
+- Dashboard’ta finansal bloklar, operasyonel kartlar ve yaklaşan işler yan paneli daha okunaklı yerleşimle kurgulandı; veri örnekleri placeholder olarak sunulmaya devam ediyor.
+- Ürün/Cari/Teklif/Satış listeleri aynı modül ve yetki akışları korunarak sadece görsel olarak rafine edildi.
+
 ## Dashboard UX – Paraşüt Referansı
 - Finans odaklı admin panel yaklaşımı
 - Placeholder grafik kullanımı
