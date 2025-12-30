@@ -24,16 +24,19 @@ class ModuleAccessMiddleware
 
     private function bootstrapPermissions(string $moduleKey): void
     {
-        if ($moduleKey !== 'offers') {
-            return;
-        }
-
         try {
-            Permission::ensurePermissionWithRoles('offer.view', 'Teklifleri görüntüleme', ['Admin', 'Sales']);
-            Permission::ensurePermissionWithRoles('offer.create', 'Teklif oluşturma', ['Admin', 'Sales']);
-            Permission::ensurePermissionWithRoles('offer.update_status', 'Teklif durumu güncelleme', ['Admin', 'Sales']);
+            if ($moduleKey === 'offers') {
+                Permission::ensurePermissionWithRoles('offer.view', 'Teklifleri görüntüleme', ['Admin', 'Sales']);
+                Permission::ensurePermissionWithRoles('offer.create', 'Teklif oluşturma', ['Admin', 'Sales']);
+                Permission::ensurePermissionWithRoles('offer.update_status', 'Teklif durumu güncelleme', ['Admin', 'Sales']);
+            }
+
+            if ($moduleKey === 'sales') {
+                Permission::ensurePermissionWithRoles('sale.view', 'Satışları görüntüleme', ['Admin', 'Sales']);
+                Permission::ensurePermissionWithRoles('sale.create', 'Satış oluşturma', ['Admin', 'Sales']);
+            }
         } catch (Throwable $e) {
-            error_log('Offer permission bootstrap error: ' . $e->getMessage());
+            error_log('Permission bootstrap error: ' . $e->getMessage());
         }
     }
 

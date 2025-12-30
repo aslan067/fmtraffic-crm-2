@@ -21,4 +21,10 @@ return [
         'permission' => 'offer.view',
         'label' => 'Teklifler',
     ],
+    'sales' => [
+        'route' => '/sales',
+        'feature' => 'sales',
+        'permission' => 'sale.view',
+        'label' => 'Satışlar',
+    ],
 ];

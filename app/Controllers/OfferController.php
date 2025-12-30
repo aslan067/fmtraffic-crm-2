@@ -244,11 +244,15 @@ class OfferController
         }
 
         $flash = getFlash();
+        $canConvertToSale = (($offer['status'] ?? '') === 'approved')
+            && Auth::canAccessModule('sales')
+            && Auth::hasPermission('sale.create');
         view('offers/show', [
             'offer' => $offer,
             'items' => $items,
             'flash' => $flash,
             'canUpdateStatus' => can('offer.update_status'),
+            'canConvertToSale' => $canConvertToSale,
         ]);
     }
 
