@@ -16,62 +16,89 @@ $actingCompanyMissing = $isSuperAdmin && Auth::actingCompanyId() === null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title ?? 'CRM', ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-3wobZ0J3LKH7X1LoE7jC/9JXe+0EB6e/8BiOuhSngQWhOQ/WyJgnsEZqZ8i+A0gD" crossorigin="anonymous">
     <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <body class="bg-light">
-<div class="container-fluid min-vh-100">
-    <div class="row flex-nowrap">
-        <aside class="col-12 col-md-3 col-lg-2 px-3 py-4 border-end bg-white">
-            <div class="d-flex flex-column gap-3">
-                <div>
-                    <div class="fw-bold text-uppercase small text-muted mb-1">Firma</div>
-                    <div class="fs-5 fw-semibold"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
-                    <div class="text-muted small">Kontrol Paneli</div>
-                </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center gap-3">
+            <div class="app-brand fw-semibold">FMTraffic CRM</div>
+            <div class="text-muted small">/ <?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
+        </div>
+        <div class="d-flex align-items-center gap-3 ms-auto">
+            <div class="text-end">
+                <div class="fw-semibold"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></div>
+                <div class="text-muted small"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
+            </div>
+            <form action="/logout" method="POST" class="mb-0">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Çıkış</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
 
-                <div>
-                    <div class="fw-bold text-uppercase small text-muted mb-2">Modüller</div>
-                    <div class="list-group">
-                        <?php foreach ($activeModules as $module): ?>
-                            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center <?php echo $module['is_active'] ? 'active' : ''; ?>"
-                               href="<?php echo htmlspecialchars($module['route'], ENT_QUOTES, 'UTF-8'); ?>">
-                                <span><?php echo htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                <?php if (!empty($module['icon'])): ?>
-                                    <span class="opacity-75"><?php echo $module['icon']; ?></span>
-                                <?php endif; ?>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
+<div class="layout d-flex">
+    <aside class="sidebar bg-dark text-white">
+        <div class="sidebar-inner px-3 py-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="avatar bg-white bg-opacity-10 text-white d-flex align-items-center justify-content-center rounded-3 fs-5">
+                    <i class="bi bi-grid-1x2-fill"></i>
                 </div>
-
                 <div>
-                    <div class="fw-bold text-uppercase small text-muted mb-2">Aksiyonlar</div>
-                    <div class="list-group">
-                        <?php if (can('users.create')): ?>
-                            <a class="list-group-item list-group-item-action" href="/users/create">Kullanıcı Oluştur</a>
-                        <?php endif; ?>
-                        <?php if ($isSuperAdmin): ?>
-                            <a class="list-group-item list-group-item-action" href="/super-admin/companies">Super Admin</a>
-                        <?php endif; ?>
-                        <form action="/logout" method="POST" class="d-grid mt-2">
-                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
-                            <button type="submit" class="btn btn-outline-secondary">Çıkış</button>
-                        </form>
-                    </div>
+                    <div class="text-uppercase small text-white-50">Kontrol Paneli</div>
+                    <div class="fw-semibold"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
                 </div>
             </div>
-        </aside>
-        <div class="col px-4 py-3">
-            <header class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-3 mb-3 border-bottom">
+            <div class="small text-uppercase text-white-50 mb-2">Modüller</div>
+            <nav class="nav nav-pills flex-column nav-flush gap-1">
+                <?php foreach ($activeModules as $module): ?>
+                    <a class="nav-link d-flex align-items-center gap-2 text-white <?php echo $module['is_active'] ? 'active' : 'text-white-50'; ?>"
+                       href="<?php echo htmlspecialchars($module['route'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <span class="sidebar-icon d-inline-flex align-items-center justify-content-center">
+                            <?php echo !empty($module['icon']) ? $module['icon'] : '<i class="bi bi-circle"></i>'; ?>
+                        </span>
+                        <span class="flex-grow-1"><?php echo htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+
+            <div class="small text-uppercase text-white-50 mt-4 mb-2">Kısayollar</div>
+            <div class="d-grid gap-2">
+                <?php if (can('users.create')): ?>
+                    <a class="btn btn-outline-light btn-sm d-flex align-items-center justify-content-center gap-2" href="/users/create">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Kullanıcı Oluştur</span>
+                    </a>
+                <?php endif; ?>
+                <?php if ($isSuperAdmin): ?>
+                    <a class="btn btn-outline-light btn-sm d-flex align-items-center justify-content-center gap-2" href="/super-admin/companies">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Super Admin</span>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content flex-grow-1">
+        <div class="container-fluid py-4">
+            <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
                 <div>
-                    <div class="text-uppercase small text-muted">CRM</div>
+                    <p class="text-uppercase small text-muted mb-1">FMTraffic CRM</p>
                     <h1 class="h4 mb-0"><?php echo htmlspecialchars($title ?? 'CRM', ENT_QUOTES, 'UTF-8'); ?></h1>
                 </div>
-                <div class="text-end">
-                    <div class="fw-semibold"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></div>
-                    <div class="text-muted small"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
-                </div>
-            </header>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none">Anasayfa</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($title ?? 'Sayfa', ENT_QUOTES, 'UTF-8'); ?></li>
+                    </ol>
+                </nav>
+            </div>
 
             <?php if ($actingCompanyMissing): ?>
                 <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
@@ -82,7 +109,7 @@ $actingCompanyMissing = $isSuperAdmin && Auth::actingCompanyId() === null;
 
             <?php echo $content ?? ''; ?>
         </div>
-    </div>
+    </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>

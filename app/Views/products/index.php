@@ -2,36 +2,38 @@
 $title = 'Ürün Yönetimi';
 ob_start();
 ?>
-<div class="container-fluid g-3">
-    <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
-        <div>
-            <p class="text-uppercase text-muted small mb-1">Ürünler</p>
-            <h1 class="h4 mb-0">Ürün Yönetimi</h1>
-        </div>
-        <?php if (canAccess('product', 'product.create')): ?>
-            <a href="/products/create" class="btn btn-primary">Yeni Ürün</a>
-        <?php endif; ?>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <p class="text-muted small mb-1">Ürünleri yönetin, fiyatları ve stokları izleyin.</p>
+        <h2 class="h5 mb-0">Ürünler</h2>
     </div>
-
-    <?php if (!empty($flash['success'])): ?>
-        <div class="alert alert-success"><?php echo htmlspecialchars($flash['success'], ENT_QUOTES, 'UTF-8'); ?></div>
+    <?php if (canAccess('product', 'product.create')): ?>
+        <a href="/products/create" class="btn btn-primary d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i>
+            <span>Yeni Ekle</span>
+        </a>
     <?php endif; ?>
-    <?php if (!empty($flash['error'])): ?>
-        <div class="alert alert-danger"><?php echo htmlspecialchars($flash['error'], ENT_QUOTES, 'UTF-8'); ?></div>
-    <?php endif; ?>
+</div>
 
-    <div class="row g-3">
-        <div class="col-12 col-xl-8">
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="h5 mb-0">Ürün Listesi</h3>
-                </div>
+<?php if (!empty($flash['success'])): ?>
+    <div class="alert alert-success"><?php echo htmlspecialchars($flash['success'], ENT_QUOTES, 'UTF-8'); ?></div>
+<?php endif; ?>
+<?php if (!empty($flash['error'])): ?>
+    <div class="alert alert-danger"><?php echo htmlspecialchars($flash['error'], ENT_QUOTES, 'UTF-8'); ?></div>
+<?php endif; ?>
 
+<div class="row g-4">
+    <div class="col-12 col-xl-8">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h3 class="h6 mb-0">Ürün Listesi</h3>
+            </div>
+            <div class="card-body">
                 <?php if (empty($products)): ?>
                     <p class="text-muted mb-0">Henüz ürün eklenmemiş.</p>
                 <?php else: ?>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table table-striped table-hover align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th scope="col">Kod</th>
@@ -44,7 +46,7 @@ ob_start();
                                     <th scope="col">Durum</th>
                                     <th scope="col">Oluşturulma</th>
                                     <?php if (canAccess('product', 'product.edit') || canAccess('product', 'product.deactivate')): ?>
-                                        <th scope="col">İşlemler</th>
+                                        <th scope="col" class="text-end">İşlemler</th>
                                     <?php endif; ?>
                                 </tr>
                             </thead>
@@ -61,16 +63,18 @@ ob_start();
                                         <td><span class="badge text-bg-light"><?php echo htmlspecialchars($product['status'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span></td>
                                         <td><?php echo htmlspecialchars($product['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <?php if (canAccess('product', 'product.edit') || canAccess('product', 'product.deactivate')): ?>
-                                            <td class="d-flex gap-2 flex-wrap">
-                                                <?php if (canAccess('product', 'product.edit')): ?>
-                                                    <a href="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/edit" class="btn btn-sm btn-outline-primary">Düzenle</a>
-                                                <?php endif; ?>
-                                                <?php if (canAccess('product', 'product.deactivate') && ($product['status'] ?? '') !== 'passive'): ?>
-                                                    <form method="POST" action="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/deactivate" class="d-inline" onsubmit="return confirm('Ürün pasife alınsın mı?');">
-                                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Pasif Et</button>
-                                                    </form>
-                                                <?php endif; ?>
+                                            <td class="text-end">
+                                                <div class="d-inline-flex gap-2 flex-wrap">
+                                                    <?php if (canAccess('product', 'product.edit')): ?>
+                                                        <a href="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/edit" class="btn btn-sm btn-outline-primary">Düzenle</a>
+                                                    <?php endif; ?>
+                                                    <?php if (canAccess('product', 'product.deactivate') && ($product['status'] ?? '') !== 'passive'): ?>
+                                                        <form method="POST" action="/products/<?php echo htmlspecialchars($product['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>/deactivate" class="d-inline" onsubmit="return confirm('Ürün pasife alınsın mı?');">
+                                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">Pasif Et</button>
+                                                        </form>
+                                                    <?php endif; ?>
+                                                </div>
                                             </td>
                                         <?php endif; ?>
                                     </tr>
@@ -81,11 +85,15 @@ ob_start();
                 <?php endif; ?>
             </div>
         </div>
+    </div>
 
-        <div class="col-12 col-xl-4">
-            <div class="mb-3">
-                <h3 class="h5 mb-2">Ürün Grupları</h3>
-                <p class="text-muted">Gruplar ürünleri kategorize eder. Yeni grup eklemek için ürün oluştururken “Yeni grup adı” alanını kullanabilirsiniz.</p>
+    <div class="col-12 col-xl-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h3 class="h6 mb-0">Ürün Grupları</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Gruplar ürünleri kategorize eder. Yeni grup eklemek için ürün oluştururken “Yeni grup adı” alanını kullanabilirsiniz.</p>
                 <?php if (empty($groups)): ?>
                     <p class="text-muted mb-0">Henüz grup tanımlanmadı.</p>
                 <?php else: ?>

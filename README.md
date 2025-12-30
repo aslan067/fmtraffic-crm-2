@@ -22,6 +22,10 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - Tüm sayfalar için ortak header ve içerik alanı
 - ModuleRegistry tabanlı, yetki kontrollü sidebar menü
 
+## C1 – Profesyonel Admin UI
+- Bootstrap admin layout
+- Standart sayfa yapısı
+
 ## UI & Menü Stabilizasyonu (B Planı)
 - Arayüz Bootstrap 5 CDN üzerinden yüklenir; küçük bir `public/assets/css/app.css` dosyası yalnızca sidebar ve tablo görünümünü ince ayar için kullanılır.
 - Menü listesi `ModuleRegistry` kayıtları üzerinden üretilir ve `Auth::canAccessModule` kontrolü ile filtrelenir; hardcode menü yoktur.
