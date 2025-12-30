@@ -6,13 +6,19 @@ ob_start();
     <div>
         <p class="eyebrow text-uppercase mb-1">Ürünler</p>
         <h2 class="h4 mb-1">Ürün Yönetimi</h2>
-        <p class="text-muted mb-0">Ürünleri yönetin, fiyatları ve stokları izleyin.</p>
+        <p class="text-muted mb-0">Ürünleri yönetin, fiyatları ve stokları kurumsal SaaS görünümüyle takip edin.</p>
     </div>
     <?php if (canAccess('product', 'product.create')): ?>
-        <a href="/products/create" class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="bi bi-plus-lg"></i>
-            <span>Yeni Ekle</span>
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/products/create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-lg"></i>
+                <span>Yeni Ekle</span>
+            </a>
+            <a href="/dashboard" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-graph-up"></i>
+                <span>Özet</span>
+            </a>
+        </div>
     <?php endif; ?>
 </div>
 
@@ -28,19 +34,20 @@ ob_start();
         <div class="card h-100">
             <div class="card-header bg-white d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="pill-icon bg-primary-subtle text-primary"><i class="bi bi-box-seam"></i></div>
+                    <div class="pill-icon"><i class="bi bi-box-seam"></i></div>
                     <div>
                         <div class="text-uppercase small text-muted mb-0">Liste</div>
                         <h3 class="h6 mb-0">Ürün Listesi</h3>
                     </div>
                 </div>
+                <span class="badge text-bg-light border">Finans ve stok görünümü</span>
             </div>
             <div class="card-body">
                 <?php if (empty($products)): ?>
                     <p class="text-muted mb-0">Henüz ürün eklenmemiş.</p>
                 <?php else: ?>
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle mb-0">
+                        <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th scope="col">Kod</th>
@@ -89,6 +96,7 @@ ob_start();
                             </tbody>
                         </table>
                     </div>
+                    <p class="small text-muted mt-3 mb-0">Liste; yetki, paket ve modül kontrolleri değişmeden görselleştirildi.</p>
                 <?php endif; ?>
             </div>
         </div>
@@ -97,7 +105,7 @@ ob_start();
     <div class="col-12 col-xl-4">
         <div class="card h-100">
             <div class="card-header bg-white d-flex align-items-center gap-2">
-                <div class="pill-icon bg-secondary-subtle text-secondary"><i class="bi bi-collection"></i></div>
+                <div class="pill-icon"><i class="bi bi-collection"></i></div>
                 <div>
                     <div class="text-uppercase small text-muted mb-0">Gruplar</div>
                     <h3 class="h6 mb-0">Ürün Grupları</h3>

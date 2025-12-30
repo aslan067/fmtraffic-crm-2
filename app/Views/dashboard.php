@@ -8,11 +8,11 @@ ob_start();
     <div>
         <p class="eyebrow text-uppercase mb-1">Finansal Özet</p>
         <h2 class="h3 mb-2">Güncel Durum</h2>
-        <p class="text-muted mb-0"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?> için tahsilat ve ödeme görünümü.</p>
+        <p class="text-muted mb-0"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?> için tahsilat, ödeme ve operasyon görünümü.</p>
     </div>
-    <div class="hero-actions d-flex align-items-center gap-2">
+    <div class="hero-actions d-flex align-items-center gap-2 flex-wrap">
         <?php if (can('users.create')): ?>
-            <a href="/users/create" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+            <a href="/users/create" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
                 <i class="bi bi-person-plus"></i>
                 <span>Kullanıcı Oluştur</span>
             </a>
@@ -26,16 +26,47 @@ ob_start();
     </div>
 </div>
 
-<div class="card dashboard-slab mb-4">
-    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-            <div class="text-uppercase small text-muted mb-1">Finans & CRM</div>
-            <h3 class="h5 mb-1">Paraşüt benzeri özet</h3>
-            <p class="text-muted mb-0">Tahsilatlar, ödemeler ve KPI kartları tek bakışta.</p>
+<div class="grid-tiles three mb-4">
+    <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="accent-chip"><i class="bi bi-cash-coin"></i> Tahsilat</span>
+            <span class="badge text-bg-light">Bu ay</span>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge text-bg-light d-inline-flex align-items-center gap-1"><i class="bi bi-lightning-charge"></i> Anlık görünüm</span>
-            <span class="badge text-bg-light d-inline-flex align-items-center gap-1"><i class="bi bi-calendar-week"></i> Bu ay</span>
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small text-uppercase">Toplam</div>
+                <div class="stat-value">₺ 1.250.000</div>
+                <div class="stat-trend trend-up">+12% artış</div>
+            </div>
+            <div class="sparkline w-50"></div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="accent-chip"><i class="bi bi-credit-card-2-front"></i> Ödeme</span>
+            <span class="badge text-bg-light">Nakit çıkışı</span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small text-uppercase">Planlanmış</div>
+                <div class="stat-value">₺ 940.000</div>
+                <div class="stat-trend trend-neutral">₺ 180.000 gecikmiş</div>
+            </div>
+            <div class="sparkline w-50"></div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="accent-chip"><i class="bi bi-bar-chart"></i> Nakit Akışı</span>
+            <span class="badge text-bg-light">Güncel</span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="text-muted small text-uppercase">Öngörü</div>
+                <div class="stat-value">₺ 310.000</div>
+                <div class="stat-trend trend-up">+₺ 45.000 net</div>
+            </div>
+            <div class="sparkline w-50"></div>
         </div>
     </div>
 </div>
@@ -43,120 +74,65 @@ ob_start();
 <div class="card mb-4">
     <div class="card-header bg-white d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
-            <div class="pill-icon bg-primary-subtle text-primary"><i class="bi bi-cash-coin"></i></div>
+            <div class="pill-icon"><i class="bi bi-activity"></i></div>
             <div>
-                <div class="text-uppercase small text-muted mb-0">Tahsilatlar</div>
-                <h3 class="h6 mb-0">Planlanmış ve gecikmiş akış</h3>
+                <div class="text-uppercase small text-muted mb-0">Finansal bloklar</div>
+                <h3 class="h6 mb-0">Tahsilat ve ödeme dengesi</h3>
             </div>
         </div>
-        <span class="badge text-bg-light">Örnek veri</span>
+        <span class="badge text-bg-light">Gerçek veri gerekmez</span>
     </div>
     <div class="card-body">
         <div class="row g-4">
-            <div class="col-12 col-md-4">
-                <div class="donut-card d-flex align-items-center gap-3">
-                    <div class="donut" style="--donut-value:72; --donut-color:#4c7dff;">
-                        <div class="donut-center">
-                            <span class="fw-semibold">72%</span>
-                            <small class="text-muted">Toplam</small>
+            <div class="col-12 col-lg-6">
+                <div class="stat-card h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <div class="text-uppercase small text-muted mb-1">Tahsilat akışı</div>
+                            <h4 class="h6 mb-0">Planlanmış vs gecikmiş</h4>
                         </div>
+                        <span class="badge text-bg-light">Örnek</span>
                     </div>
-                    <div>
-                        <div class="text-uppercase small text-muted mb-1">Toplam Tahsil Edilecek</div>
-                        <h4 class="h6 mb-1">₺ 1.250.000</h4>
-                        <p class="small text-muted mb-0">Haftalık planlanan tahsilatlar.</p>
+                    <div class="mb-3">
+                        <div class="sparkline w-100"></div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div class="flex-grow-1">
+                            <div class="text-muted small text-uppercase">Planlanan</div>
+                            <div class="fw-semibold">₺ 1.250.000</div>
+                            <div class="text-success small">+₺ 220.000</div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="text-muted small text-uppercase">Gecikmiş</div>
+                            <div class="fw-semibold">₺ 240.000</div>
+                            <div class="text-danger small">-₺ 65.000</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
-                <div class="donut-card d-flex align-items-center gap-3">
-                    <div class="donut" style="--donut-value:38; --donut-color:#f59e0b;">
-                        <div class="donut-center">
-                            <span class="fw-semibold">38%</span>
-                            <small class="text-muted">Gecikmiş</small>
+            <div class="col-12 col-lg-6">
+                <div class="stat-card h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <div class="text-uppercase small text-muted mb-1">Ödeme dağılımı</div>
+                            <h4 class="h6 mb-0">Bütçe ve nakit çıkışı</h4>
                         </div>
+                        <span class="badge text-bg-light">Örnek</span>
                     </div>
-                    <div>
-                        <div class="text-uppercase small text-muted mb-1">Gecikmiş</div>
-                        <h4 class="h6 mb-1">₺ 240.000</h4>
-                        <p class="small text-muted mb-0">7 günü aşan gecikme placeholder.</p>
+                    <div class="mb-3">
+                        <div class="sparkline w-100"></div>
                     </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="donut-card d-flex align-items-center gap-3">
-                    <div class="donut" style="--donut-value:18; --donut-color:#64748b;">
-                        <div class="donut-center">
-                            <span class="fw-semibold">18%</span>
-                            <small class="text-muted">Plan yok</small>
+                    <div class="d-flex gap-3">
+                        <div class="flex-grow-1">
+                            <div class="text-muted small text-uppercase">Ödenecek</div>
+                            <div class="fw-semibold">₺ 940.000</div>
+                            <div class="text-warning small">₺ 180.000 gecikmiş</div>
                         </div>
-                    </div>
-                    <div>
-                        <div class="text-uppercase small text-muted mb-1">Planlanmamış</div>
-                        <h4 class="h6 mb-1">₺ 80.000</h4>
-                        <p class="small text-muted mb-0">Plan ataması bekleyen tutarlar.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-header bg-white d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-2">
-            <div class="pill-icon bg-success-subtle text-success"><i class="bi bi-credit-card-2-front"></i></div>
-            <div>
-                <div class="text-uppercase small text-muted mb-0">Ödemeler</div>
-                <h3 class="h6 mb-0">Bütçe ve nakit çıkışları</h3>
-            </div>
-        </div>
-        <span class="badge text-bg-light">Örnek veri</span>
-    </div>
-    <div class="card-body">
-        <div class="row g-4">
-            <div class="col-12 col-md-4">
-                <div class="donut-card d-flex align-items-center gap-3">
-                    <div class="donut" style="--donut-value:64; --donut-color:#22c55e;">
-                        <div class="donut-center">
-                            <span class="fw-semibold">64%</span>
-                            <small class="text-muted">Toplam</small>
+                        <div class="flex-grow-1">
+                            <div class="text-muted small text-uppercase">Planlanmamış</div>
+                            <div class="fw-semibold">₺ 60.000</div>
+                            <div class="text-muted small">Takvim bekliyor</div>
                         </div>
-                    </div>
-                    <div>
-                        <div class="text-uppercase small text-muted mb-1">Ödenecek</div>
-                        <h4 class="h6 mb-1">₺ 940.000</h4>
-                        <p class="small text-muted mb-0">Cari ve tedarikçi ödemeleri.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="donut-card d-flex align-items-center gap-3">
-                    <div class="donut" style="--donut-value:29; --donut-color:#ef4444;">
-                        <div class="donut-center">
-                            <span class="fw-semibold">29%</span>
-                            <small class="text-muted">Gecikmiş</small>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="text-uppercase small text-muted mb-1">Geciken Ödemeler</div>
-                        <h4 class="h6 mb-1">₺ 180.000</h4>
-                        <p class="small text-muted mb-0">Vadesi geçen faturalar.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="donut-card d-flex align-items-center gap-3">
-                    <div class="donut" style="--donut-value:14; --donut-color:#94a3b8;">
-                        <div class="donut-center">
-                            <span class="fw-semibold">14%</span>
-                            <small class="text-muted">Plan yok</small>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="text-uppercase small text-muted mb-1">Planlanmamış</div>
-                        <h4 class="h6 mb-1">₺ 60.000</h4>
-                        <p class="small text-muted mb-0">Henüz takvimlenmemiş ödemeler.</p>
                     </div>
                 </div>
             </div>
@@ -166,41 +142,44 @@ ob_start();
 
 <div class="row g-4 mb-4">
     <div class="col-12 col-lg-4">
-        <div class="kpi-card card h-100">
+        <div class="card h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="pill-icon bg-info-subtle text-info"><i class="bi bi-printer"></i></div>
+                    <div class="pill-icon"><i class="bi bi-box-seam"></i></div>
+                    <span class="badge text-bg-light">Ürünler</span>
+                </div>
+                <div class="text-uppercase small text-muted mb-1">Stok ve aktif ürün</div>
+                <h3 class="display-6 fw-semibold mb-2">124</h3>
+                <p class="text-muted small mb-3">Aktif ürün, kampanya dışı stoklarla birlikte.</p>
+                <div class="mini-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="pill-icon"><i class="bi bi-file-earmark-text"></i></div>
                     <span class="badge text-bg-light">Teklif</span>
                 </div>
-                <div class="text-uppercase small text-muted mb-1">Yazdırılmamış teklifler</div>
+                <div class="text-uppercase small text-muted mb-1">Onay bekleyen</div>
+                <h3 class="display-6 fw-semibold mb-2">36</h3>
+                <p class="text-muted small mb-3">PDF gönderilmiş, müşteri geri dönüşü bekleniyor.</p>
+                <div class="mini-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="pill-icon"><i class="bi bi-bag-check"></i></div>
+                    <span class="badge text-bg-light">Satış</span>
+                </div>
+                <div class="text-uppercase small text-muted mb-1">Kapalı kazanılan</div>
                 <h3 class="display-6 fw-semibold mb-2">18</h3>
-                <p class="text-muted small mb-0">Hazırlanıp paylaşılmamış taslaklar.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-lg-4">
-        <div class="kpi-card card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="pill-icon bg-warning-subtle text-warning"><i class="bi bi-arrow-repeat"></i></div>
-                    <span class="badge text-bg-light">Otomasyon</span>
-                </div>
-                <div class="text-uppercase small text-muted mb-1">Tekrarlayan işlemler</div>
-                <h3 class="display-6 fw-semibold mb-2">32</h3>
-                <p class="text-muted small mb-0">Aktif aidat ve abonelik işlemleri.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-lg-4">
-        <div class="kpi-card card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="pill-icon bg-danger-subtle text-danger"><i class="bi bi-percent"></i></div>
-                    <span class="badge text-bg-light">Vergi</span>
-                </div>
-                <div class="text-uppercase small text-muted mb-1">Bu ay oluşan KDV</div>
-                <h3 class="display-6 fw-semibold mb-2">₺ 210.000</h3>
-                <p class="text-muted small mb-0">Satış ve alış hareketlerinden.</p>
+                <p class="text-muted small mb-3">Son 30 gün içinde tamamlanan satışlar.</p>
+                <div class="mini-chart"></div>
             </div>
         </div>
     </div>
@@ -213,8 +192,8 @@ ob_start();
 ?>
 <div class="side-panel-header d-flex align-items-center justify-content-between mb-3">
     <div>
-        <div class="text-uppercase small text-muted mb-1">Zaman Çizelgesi</div>
-        <h3 class="h6 mb-0">Günlük akış</h3>
+        <div class="text-uppercase small text-muted mb-1">Yaklaşan işler</div>
+        <h3 class="h6 mb-0">Zaman Çizelgesi</h3>
     </div>
     <span class="badge text-bg-light">Statik</span>
 </div>

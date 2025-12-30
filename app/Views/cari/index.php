@@ -6,12 +6,18 @@ ob_start();
     <div>
         <p class="eyebrow text-uppercase mb-1">Cariler</p>
         <h2 class="h4 mb-1">Cari Yönetimi</h2>
-        <p class="text-muted mb-0">Carilerinizin iletişim ve finansal detaylarını yönetin.</p>
+        <p class="text-muted mb-0">Carilerinizin iletişim ve finansal detaylarını güven veren bir SaaS akışıyla yönetin.</p>
     </div>
-    <a href="/caris/create" class="btn btn-primary d-flex align-items-center gap-2">
-        <i class="bi bi-plus-lg"></i>
-        <span>Yeni Ekle</span>
-    </a>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="/caris/create" class="btn btn-primary d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i>
+            <span>Yeni Ekle</span>
+        </a>
+        <a href="/dashboard" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <i class="bi bi-graph-up"></i>
+            <span>Özet</span>
+        </a>
+    </div>
 </div>
 
 <?php if (!empty($flash['success'])): ?>
@@ -24,19 +30,20 @@ ob_start();
 <div class="card">
     <div class="card-header bg-white d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
-            <div class="pill-icon bg-success-subtle text-success"><i class="bi bi-people"></i></div>
+            <div class="pill-icon"><i class="bi bi-people"></i></div>
             <div>
                 <div class="text-uppercase small text-muted mb-0">Liste</div>
                 <h3 class="h6 mb-0">Cari Listesi</h3>
             </div>
         </div>
+        <span class="badge text-bg-light border">Finans ve iletişim özet</span>
     </div>
     <div class="card-body">
         <?php if (empty($caris)): ?>
             <p class="text-muted mb-0">Henüz cari eklenmemiş.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
                             <th scope="col">Ad</th>

@@ -6,13 +6,19 @@ ob_start();
     <div>
         <p class="eyebrow text-uppercase mb-1">Teklifler</p>
         <h2 class="h4 mb-1">Teklif Akışı</h2>
-        <p class="text-muted mb-0">Teklif akışını yönetin, durumları ve tutarları izleyin.</p>
+        <p class="text-muted mb-0">Teklif akışını yönetin, durum ve tutarları operasyonel görünümle izleyin.</p>
     </div>
     <?php if (canAccess('offer', 'offer.create')): ?>
-        <a href="/offers/create" class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="bi bi-plus-lg"></i>
-            <span>Yeni Ekle</span>
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/offers/create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-lg"></i>
+                <span>Yeni Ekle</span>
+            </a>
+            <a href="/dashboard" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-graph-up"></i>
+                <span>Özet</span>
+            </a>
+        </div>
     <?php endif; ?>
 </div>
 
@@ -26,19 +32,20 @@ ob_start();
 <div class="card">
     <div class="card-header bg-white d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
-            <div class="pill-icon bg-warning-subtle text-warning"><i class="bi bi-file-earmark-text"></i></div>
+            <div class="pill-icon"><i class="bi bi-file-earmark-text"></i></div>
             <div>
                 <div class="text-uppercase small text-muted mb-0">Liste</div>
                 <h3 class="h6 mb-0">Teklif Listesi</h3>
             </div>
         </div>
+        <span class="badge text-bg-light border">Durum & toplam takibi</span>
     </div>
     <div class="card-body">
         <?php if (empty($offers)): ?>
             <p class="text-muted mb-0">Henüz teklif eklenmemiş.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
                             <th scope="col">ID</th>
