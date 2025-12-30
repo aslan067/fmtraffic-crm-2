@@ -1,14 +1,58 @@
+:root {
+    --sidebar-width: 260px;
+    --navbar-height: 64px;
+}
+
 body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8f9fa;
 }
 
-.list-group-item-action {
+.layout {
+    padding-top: var(--navbar-height);
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: calc(100vh - var(--navbar-height));
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+}
+
+.sidebar .nav-link {
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.sidebar-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+}
+
+.page-header {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 0.75rem;
+}
+
+.card {
     border: 1px solid #e9ecef;
-}
-
-.list-group-item-action.active {
-    background: linear-gradient(135deg, #0d6efd, #4e8ef7);
-    border-color: #0d6efd;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
 }
 
 .table th {
@@ -20,6 +64,21 @@ body {
     background-color: #f8f9fa;
 }
 
-.card {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+.icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+        top: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
 }
