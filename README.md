@@ -73,6 +73,11 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `Auth::canAccessModule($moduleKey)` super admin durumunda tüm kontrolleri bypass eder; normal kullanıcılar için hem feature hem permission kontrolünü birlikte gerçekleştirir. Aynı fonksiyon menü, middleware ve controller tarafında ortak kullanılır.
 - `ModuleAccessMiddleware` rotalarda `module:<key>` parametresi ile çağrılır ve `Auth::canAccessModule` false dönerse 403 üretir. Dashboard menüsü de bu dosyayı okuyarak dinamik olarak güncellenir; modül eklendiğinde link otomatik görünür.
 
+## Permission Cache & Oturum Senkronu
+- Permission tanımları `PermissionSyncService` ile senkronize edilirken global bir `permission_version` değeri artırılır.
+- `Auth` her istek öncesi session'daki izin cache versiyonunu bu global değerle karşılaştırır; farklıysa izinler DB'den otomatik yüklenir.
+- Yeni permission eklendiğinde logout/login yapmaya gerek kalmadan session cache güncellenir.
+
 ### Bu düzeltmeler hangi hataları çözer?
 - Middleware katmanında oluşan yönlendirme döngüleri artık 403 yanıtı ve “Bu modüle erişim yetkiniz yok.” mesajıyla durduruluyor.
 - Super Admin hesabı bulunmadığında giriş denemeleri için daha belirgin “kullanıcı yok” uyarısı gösteriliyor.
