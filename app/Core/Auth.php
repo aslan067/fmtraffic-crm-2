@@ -229,21 +229,33 @@ class Auth
             return false;
         }
 
-        $featureKey = (string) ($module['feature'] ?? '');
         $permissionKey = (string) ($module['permission'] ?? '');
 
-        if ($permissionKey !== '' && self::hasPermission($permissionKey)) {
-            // Teklif modülü için permission yeterli olmalı.
-            if ($moduleKey === 'offers') {
-                return true;
+        if ($permissionKey === '') {
+            return false;
+        }
+
+        if (self::hasPermission($permissionKey)) {
+            return true;
+        }
+
+        $actingCompanyId = self::actingCompanyId();
+        if ($actingCompanyId === null) {
+            return false;
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $hasDirectPermission = Permission::userHasPermission($userId, (int) $actingCompanyId, $permissionKey);
+
+        if ($hasDirectPermission) {
+            if (!isset($_SESSION['permissions']) || !is_array($_SESSION['permissions'])) {
+                $_SESSION['permissions'] = [];
             }
+            $_SESSION['permissions'][] = $permissionKey;
+            $_SESSION['permissions_company_id'] = (int) $actingCompanyId;
         }
 
-        if ($featureKey !== '' && $permissionKey !== '') {
-            return self::hasFeature($featureKey) && self::hasPermission($permissionKey);
-        }
-
-        return false;
+        return $hasDirectPermission;
     }
 
     public static function isSuperAdmin(): bool
