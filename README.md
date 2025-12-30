@@ -22,6 +22,12 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - Tüm sayfalar için ortak header ve içerik alanı
 - ModuleRegistry tabanlı, yetki kontrollü sidebar menü
 
+## UI & Menü Stabilizasyonu (B Planı)
+- Arayüz Bootstrap 5 CDN üzerinden yüklenir; küçük bir `public/assets/css/app.css` dosyası yalnızca sidebar ve tablo görünümünü ince ayar için kullanılır.
+- Menü listesi `ModuleRegistry` kayıtları üzerinden üretilir ve `Auth::canAccessModule` kontrolü ile filtrelenir; hardcode menü yoktur.
+- Super admin tüm modülleri görür, firma seçili değilse uyarı banner’ı alır; firma adminleri yalnızca izinli modülleri görür ve `sale.view` izni olan kullanıcılar satış modülünü mutlaka menüde görür.
+- Yetki cache eksik olduğunda `Auth::canAccessModule` doğrudan veritabanından permission sorgulayarak menü-permission tutarsızlıklarını önler.
+
 ## Bootstrap ve Giriş Noktası
 - `public/index.php` tek giriş noktasıdır; uygulamanın tamamı buradan bootstrap edilir.
 - Bootstrap adımları sırasıyla: hata raporlama, minimal autoload, `.env` yükleme, `config/app.php` okuma, çekirdek sınıfları hazır hale getirme, `Auth` oturum başlatma/nesne oluşturma, `Router` başlatma ve dispatch.
@@ -75,7 +81,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 
 ## Yetki & Menü Mimarisi
 - Modüller `config/modules.php` dosyasında merkezi olarak tanımlanır; her modül için rota (`route`), paket özelliği (`feature`), gerekli izin (`permission`) ve menü etiketi (`label`) bilgileri tek noktadadır. Başlangıçta `products` ve `caris` modülleri yer alır.
-- `Auth::canAccessModule($moduleKey)` super admin durumunda tüm kontrolleri bypass eder; normal kullanıcılar için hem feature hem permission kontrolünü birlikte gerçekleştirir. Aynı fonksiyon menü, middleware ve controller tarafında ortak kullanılır.
+- `Auth::canAccessModule($moduleKey)` super admin durumunda tüm kontrolleri bypass eder; normal kullanıcılar için izin anahtarını session cache’inde bulamazsa veritabanından sorgular ve izin varsa TRUE döner. Aynı fonksiyon menü, middleware ve controller tarafında ortak kullanılır.
 - `ModuleAccessMiddleware` rotalarda `module:<key>` parametresi ile çağrılır ve `Auth::canAccessModule` false dönerse 403 üretir. Dashboard menüsü de bu dosyayı okuyarak dinamik olarak güncellenir; modül eklendiğinde link otomatik görünür.
 
 ## Permission Cache & Oturum Senkronu
@@ -154,7 +160,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `App\Core\Auth` içinde:
   - `hasRole($roleName)`: Kullanıcının rolünü doğrular.
   - `hasPermission($permissionKey)`: Rol-permission ilişkisi üzerinden yetki kontrolü yapar.
-  - `canAccessModule($moduleKey)`: Modül konfigürasyonundaki feature + permission değerlerini birlikte doğrular, super admin için her zaman true döner.
+  - `canAccessModule($moduleKey)`: Modül konfigürasyonundaki permission anahtarını session cache veya DB’den doğrular; super admin için her zaman true döner.
 - `Auth::isSuperAdmin()`: Sistem sahibini temsil eder; tüm yetkilere sahiptir ve company_id olmadan çalışır.
 - Middleware kullanımı: `module:<key>` formatı ile `ModuleAccessMiddleware` tetiklenir; ek aksiyon izinleri controller katmanında doğrulanır.
 
@@ -166,7 +172,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 ## Dinamik Menü & Yetki Senkronizasyonu
 - Dashboard/menü tarafında öğeler `config/modules.php` dosyasındaki kayıtlar üzerinden döngüyle üretilir; `Auth::canAccessModule` true döndüğü sürece link görünür.
 - UI gizleme yalnızca UX içindir; gerçek güvenlik backend tarafında `AuthMiddleware + ModuleAccessMiddleware` ve controller içindeki aksiyon bazlı permission kontrolleriyle sağlanır.
-- Zincir: Auth -> ModuleAccessMiddleware (feature + base permission) -> Controller permission kontrolleri → Menüde göster/gizle kararı aynı fonksiyonla senkron gider.
+- Zincir: Auth -> ModuleAccessMiddleware (base permission + opsiyonel feature) -> Controller permission kontrolleri → Menüde göster/gizle kararı aynı fonksiyonla senkron gider.
 
 ## Super Admin vs Firma Admin
 - **Super Admin**: Sistemin sahibidir, herhangi bir `company_id`'ye bağlı değildir. Tüm firmaları görür, firma oluşturur, paket atar, abonelik başlatır veya askıya alır. `/super-admin/*` rotalarına erişebilir.

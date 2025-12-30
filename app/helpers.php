@@ -136,3 +136,44 @@ function canAccessModule(string $moduleKey): bool
 {
     return \App\Core\Auth::canAccessModule($moduleKey);
 }
+
+/**
+ * Build navigation list from registered modules and permissions.
+ *
+ * @return array<int, array{key:string,label:string,route:string,icon:string,is_active:bool}>
+ */
+function navigationModules(): array
+{
+    $modules = \App\Core\ModuleRegistry::all();
+    $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    $icons = [
+        'products' => '📦',
+        'caris' => '👥',
+        'offers' => '📑',
+        'sales' => '💰',
+    ];
+
+    $items = [];
+    foreach ($modules as $moduleKey => $moduleConfig) {
+        $route = (string) ($moduleConfig['route'] ?? '');
+        $label = (string) ($moduleConfig['label'] ?? '');
+
+        if ($route === '' || $label === '') {
+            continue;
+        }
+
+        if (!canAccessModule((string) $moduleKey)) {
+            continue;
+        }
+
+        $items[] = [
+            'key' => (string) $moduleKey,
+            'label' => $label,
+            'route' => $route,
+            'icon' => $icons[$moduleKey] ?? '📁',
+            'is_active' => str_starts_with($currentPath, $route),
+        ];
+    }
+
+    return $items;
+}
