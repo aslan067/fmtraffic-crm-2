@@ -17,6 +17,11 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - `config`: Uygulama ve route tanımları
 - `database/migrations.sql`: Şema ve seed SQL
 
+## UI & Layout (A2)
+- Koyu temalı, merkezi layout ile tek tip görünüm
+- Tüm sayfalar için ortak header ve içerik alanı
+- ModuleRegistry tabanlı, yetki kontrollü sidebar menü
+
 ## Bootstrap ve Giriş Noktası
 - `public/index.php` tek giriş noktasıdır; uygulamanın tamamı buradan bootstrap edilir.
 - Bootstrap adımları sırasıyla: hata raporlama, minimal autoload, `.env` yükleme, `config/app.php` okuma, çekirdek sınıfları hazır hale getirme, `Auth` oturum başlatma/nesne oluşturma, `Router` başlatma ve dispatch.

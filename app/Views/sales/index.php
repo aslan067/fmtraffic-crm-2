@@ -1,42 +1,30 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Satışlar</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 32px; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        .header { display: flex; justify-content: space-between; align-items: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th, td { border: 1px solid #e5e5e5; padding: 10px; text-align: left; }
-        th { background: #f1f3f5; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 12px; }
-        .badge.active { background: #d1e7dd; color: #0f5132; }
-        .badge.cancelled { background: #f8d7da; color: #842029; }
-        .flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
-        .flash-success { background: #d1e7dd; color: #0f5132; }
-        .flash-error { background: #f8d7da; color: #842029; }
-        .muted { color: #6c757d; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="card">
-        <div class="header">
-            <h2>Satışlar</h2>
-        </div>
+<?php
+$title = 'Satışlar';
+ob_start();
+?>
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Satışlar</p>
+        <h1>Satış Yönetimi</h1>
+    </div>
+</div>
 
-        <?php if (!empty($flash['success'])): ?>
-            <div class="flash flash-success"><?php echo htmlspecialchars($flash['success'], ENT_QUOTES, 'UTF-8'); ?></div>
-        <?php endif; ?>
-        <?php if (!empty($flash['error'])): ?>
-            <div class="flash flash-error"><?php echo htmlspecialchars($flash['error'], ENT_QUOTES, 'UTF-8'); ?></div>
-        <?php endif; ?>
+<?php if (!empty($flash['success'])): ?>
+    <div class="alert success"><?php echo htmlspecialchars($flash['success'], ENT_QUOTES, 'UTF-8'); ?></div>
+<?php endif; ?>
+<?php if (!empty($flash['error'])): ?>
+    <div class="alert error"><?php echo htmlspecialchars($flash['error'], ENT_QUOTES, 'UTF-8'); ?></div>
+<?php endif; ?>
 
-        <?php if (empty($sales)): ?>
-            <p class="muted">Henüz satış eklenmemiş.</p>
-        <?php else: ?>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Satış Listesi</h3>
+    </div>
+
+    <?php if (empty($sales)): ?>
+        <p class="muted">Henüz satış eklenmemiş.</p>
+    <?php else: ?>
+        <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
@@ -69,8 +57,10 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
-    </div>
+        </div>
+    <?php endif; ?>
 </div>
-</body>
-</html>
+
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/../layout.php';
