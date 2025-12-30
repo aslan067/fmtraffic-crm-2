@@ -7,6 +7,7 @@ use App\Controllers\DashboardController;
 use App\Controllers\OfferController;
 use App\Controllers\CariController;
 use App\Controllers\ProductController;
+use App\Controllers\SaleController;
 use App\Controllers\SuperAdminController;
 use App\Controllers\UsersController;
 use App\Middleware\AuthMiddleware;
@@ -37,6 +38,9 @@ return [
     ['method' => 'POST', 'path' => '/offers', 'handler' => [OfferController::class, 'store'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
     ['method' => 'GET', 'path' => '/offers/{id}', 'handler' => [OfferController::class, 'show'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
     ['method' => 'POST', 'path' => '/offers/{id}/status', 'handler' => [OfferController::class, 'updateStatus'], 'middleware' => [AuthMiddleware::class, 'module:offers']],
+    ['method' => 'GET', 'path' => '/sales', 'handler' => [SaleController::class, 'index'], 'middleware' => [AuthMiddleware::class, 'module:sales', 'permission:sale.view']],
+    ['method' => 'GET', 'path' => '/sales/{id}', 'handler' => [SaleController::class, 'show'], 'middleware' => [AuthMiddleware::class, 'module:sales', 'permission:sale.view']],
+    ['method' => 'GET', 'path' => '/sales/from-offer/{offerId}', 'handler' => [SaleController::class, 'fromOffer'], 'middleware' => [AuthMiddleware::class, 'module:sales', 'permission:sale.create']],
     ['method' => 'GET', 'path' => '/users/create', 'handler' => [UsersController::class, 'create'], 'middleware' => [AuthMiddleware::class]],
     ['method' => 'POST', 'path' => '/users', 'handler' => [UsersController::class, 'store'], 'middleware' => [AuthMiddleware::class]],
     ['method' => 'GET', 'path' => '/super-admin/companies', 'handler' => [SuperAdminController::class, 'listCompanies'], 'middleware' => [AuthMiddleware::class, SuperAdminMiddleware::class]],

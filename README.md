@@ -192,3 +192,7 @@ Migration dosyası şu admin kullanıcısını ekler:
 - **Kim oluşturabilir?** `offer.create` izni olan Admin/Sales kullanıcıları ile Super Admin teklif oluşturabilir. Modül giriş noktası `offer.view` izniyle korunur; yetki DB’de mevcutsa erişim engellenmez.
 - **Super admin test modu:** Super Admin firma seçme ekranı (`/offers/select-company`) üzerinden bağlam belirler; seçilen firma sadece kendi oturumunda geçerli olur ve teklif oluşturma/güncelleme işlemleri bu firmaya göre çalışır.
 - **Firma bağlamı:** Firma seçimi yapılmadan teklif oluşturma denemeleri yönlendirilir ve açıklama mesajıyla engellenir. Listeleme Super Admin için tüm firmaları kapsar, Admin/Sales kullanıcıları kendi firmalarıyla sınırlıdır.
+
+## Satış Yönetimi (MVP)
+- **Menü & modül:** `config/modules.php` içinde tanımlanan `sales` modülü `/sales` rotasıyla Dashboard menüsünde otomatik görünür; erişim için paket (`feature:sales`) ve `sale.view` yetkisi birlikte aranır.
+- **Tekliften satışa dönüşüm:** Onaylı (`approved`) teklif detaylarında yer alan “Satışa Dönüştür” butonu `/sales/from-offer/{offerId}` rotasını tetikler; teklif satırları korunarak satış oluşturulur ve liste/detay ekranları üzerinden görüntülenir.
