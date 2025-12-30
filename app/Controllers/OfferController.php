@@ -9,18 +9,12 @@ use App\Models\Cari;
 use App\Models\Company;
 use App\Models\Offer;
 use App\Models\OfferItem;
-use App\Models\Permission;
 use App\Models\Product;
 use PDOException;
 use Throwable;
 
 class OfferController
 {
-    public function __construct()
-    {
-        $this->ensurePermissionsSeeded();
-    }
-
     public function index(): void
     {
         $this->assertModuleAccess('offers');
@@ -435,17 +429,6 @@ class OfferController
             http_response_code(403);
             echo 'Bu işlem için yetkiniz yok.';
             exit;
-        }
-    }
-
-    private function ensurePermissionsSeeded(): void
-    {
-        try {
-            Permission::ensurePermissionWithRoles('offer.view', 'Teklifleri görüntüleme', ['Admin', 'Sales']);
-            Permission::ensurePermissionWithRoles('offer.create', 'Teklif oluşturma', ['Admin', 'Sales']);
-            Permission::ensurePermissionWithRoles('offer.update_status', 'Teklif durumu güncelleme', ['Admin', 'Sales']);
-        } catch (Throwable $e) {
-            error_log('Offer permission seed error: ' . $e->getMessage());
         }
     }
 

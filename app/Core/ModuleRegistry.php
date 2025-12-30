@@ -2,6 +2,9 @@
 
 namespace App\Core;
 
+use App\Services\PermissionSyncService;
+use Throwable;
+
 class ModuleRegistry
 {
     private static ?array $modules = null;
@@ -11,6 +14,8 @@ class ModuleRegistry
         if (self::$modules === null) {
             $configPath = BASE_PATH . '/config/modules.php';
             self::$modules = file_exists($configPath) ? (array) require $configPath : [];
+
+            self::syncPermissions();
         }
 
         return self::$modules;
@@ -27,5 +32,14 @@ class ModuleRegistry
         $module = $modules[$moduleKey];
 
         return is_array($module) ? $module : null;
+    }
+
+    private static function syncPermissions(): void
+    {
+        try {
+            PermissionSyncService::sync(self::$modules ?? []);
+        } catch (Throwable $e) {
+            error_log('Permission sync failed: ' . $e->getMessage());
+        }
     }
 }

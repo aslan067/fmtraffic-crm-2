@@ -29,6 +29,20 @@ class Permission
         return $permission ?: null;
     }
 
+    public static function ensure(string $key, ?string $description = null): ?array
+    {
+        $pdo = DB::getConnection();
+        $stmt = $pdo->prepare(
+            'INSERT IGNORE INTO permissions (`key`, description) VALUES (:key, :description)'
+        );
+        $stmt->execute([
+            ':key' => $key,
+            ':description' => $description,
+        ]);
+
+        return self::findByKey($key);
+    }
+
     public static function findByCompany(int $companyId): array
     {
         // Permissions are global; return all for convenience to match the method contract.

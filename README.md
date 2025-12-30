@@ -148,6 +148,11 @@ Migration dosyası şu admin kullanıcısını ekler:
 - `Auth::isSuperAdmin()`: Sistem sahibini temsil eder; tüm yetkilere sahiptir ve company_id olmadan çalışır.
 - Middleware kullanımı: `module:<key>` formatı ile `ModuleAccessMiddleware` tetiklenir; ek aksiyon izinleri controller katmanında doğrulanır.
 
+## Permission Senkronizasyonu
+- Tüm modül yetkileri `config/permissions.php` dosyasında merkezi olarak tanımlanır. Her kayıt permission anahtarını, etiketini (description) ve varsayılan global rol eşlemesini içerir.
+- Uygulama açılışında modül listesi (ModuleRegistry) yüklenirken permission tanımları otomatik olarak veritabanına eklenir ve ilgili global rollere (ör. Admin, Sales) bağlanır. Mevcut kayıtların description değerleri güncellenmez; sadece eksik izinler eklenir.
+- Yeni bir modül eklerken `config/permissions.php` içine modül anahtarı altında gerekli permission listesini eklemek, izinlerin otomatik oluşması ve rol-permission bağlarının kurulması için yeterlidir.
+
 ## Dinamik Menü & Yetki Senkronizasyonu
 - Dashboard/menü tarafında öğeler `config/modules.php` dosyasındaki kayıtlar üzerinden döngüyle üretilir; `Auth::canAccessModule` true döndüğü sürece link görünür.
 - UI gizleme yalnızca UX içindir; gerçek güvenlik backend tarafında `AuthMiddleware + ModuleAccessMiddleware` ve controller içindeki aksiyon bazlı permission kontrolleriyle sağlanır.
