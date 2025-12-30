@@ -7,7 +7,6 @@ use App\Core\DB;
 use App\Core\Exceptions\DatabaseConnectionException;
 use App\Models\Offer;
 use App\Models\OfferItem;
-use App\Models\Permission;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use PDOException;
@@ -15,11 +14,6 @@ use Throwable;
 
 class SaleController
 {
-    public function __construct()
-    {
-        $this->ensurePermissionsSeeded();
-    }
-
     public function index(): void
     {
         $this->assertModuleAccess('sales');
@@ -210,15 +204,5 @@ class SaleController
         error_log('Unexpected sale error: ' . $e->getMessage());
         echo 'Satış verileri yüklenirken bir hata oluştu.';
         exit;
-    }
-
-    private function ensurePermissionsSeeded(): void
-    {
-        try {
-            Permission::ensurePermissionWithRoles('sale.view', 'Satışları görüntüleme', ['Admin', 'Sales']);
-            Permission::ensurePermissionWithRoles('sale.create', 'Satış oluşturma', ['Admin', 'Sales']);
-        } catch (Throwable $e) {
-            error_log('Sale permission seed error: ' . $e->getMessage());
-        }
     }
 }
