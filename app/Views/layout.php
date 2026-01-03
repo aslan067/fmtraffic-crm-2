@@ -9,139 +9,154 @@ $isSuperAdmin = !empty($user['is_super_admin']);
 $activeModules = navigationModules();
 $actingCompanyMissing = $isSuperAdmin && Auth::actingCompanyId() === null;
 $sidePanel = $sidePanel ?? null;
+$flashMessages = isset($flash) && is_array($flash) ? $flash : [];
+$pageTitle = $title ?? 'CRM';
+$appName = 'FM TRAFIK CRM';
 ?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($title ?? 'CRM', ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-3wobZ0J3LKH7X1LoE7jC/9JXe+0EB6e/8BiOuhSngQWhOQ/WyJgnsEZqZ8i+A0gD" crossorigin="anonymous">
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
+    <link rel="stylesheet" href="https://unpkg.com/@tabler/core@latest/dist/css/tabler.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="stylesheet" href="/assets/css/app.css">
 </head>
-<body class="bg-surface">
-<div class="layout d-flex">
-    <aside class="sidebar">
-        <div class="sidebar-inner h-100 d-flex flex-column">
-            <div class="sidebar-brand d-flex align-items-center gap-3 mb-4">
-                <div class="brand-icon d-inline-flex align-items-center justify-content-center rounded-3 text-white">
-                    <i class="bi bi-activity"></i>
-                </div>
-                <div>
-                    <div class="text-uppercase small text-muted mb-1">FMTraffic CRM</div>
-                    <div class="fw-semibold text-dark"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-label text-uppercase small text-muted mb-2">Navigasyon</div>
-                <nav class="nav flex-column nav-flush gap-1">
-                    <?php foreach ($activeModules as $module): ?>
-                        <a class="nav-link sidebar-link d-flex align-items-center gap-2 <?php echo $module['is_active'] ? 'active' : ''; ?>"
-                           href="<?php echo htmlspecialchars($module['route'], ENT_QUOTES, 'UTF-8'); ?>">
-                            <span class="sidebar-icon d-inline-flex align-items-center justify-content-center">
-                                <?php echo !empty($module['icon']) ? $module['icon'] : '<i class="bi bi-circle"></i>'; ?>
-                            </span>
-                            <span class="flex-grow-1"><?php echo htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <?php if ($module['is_active']): ?>
-                                <i class="bi bi-chevron-right text-muted small"></i>
-                            <?php endif; ?>
-                        </a>
-                    <?php endforeach; ?>
-                </nav>
-            </div>
-
-            <div class="sidebar-section mt-4">
-                <div class="sidebar-label text-uppercase small text-muted mb-2">Kısayollar</div>
-                <div class="d-grid gap-2">
-                    <?php if (can('users.create')): ?>
-                        <a class="btn btn-ghost d-flex align-items-center justify-content-between" href="/users/create">
-                            <span class="d-flex align-items-center gap-2">
-                                <i class="bi bi-person-plus"></i>
-                                <span>Kullanıcı Oluştur</span>
-                            </span>
-                            <i class="bi bi-arrow-up-right"></i>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($isSuperAdmin): ?>
-                        <a class="btn btn-ghost d-flex align-items-center justify-content-between" href="/super-admin/companies">
-                            <span class="d-flex align-items-center gap-2">
-                                <i class="bi bi-shield-lock"></i>
-                                <span>Super Admin</span>
-                            </span>
-                            <i class="bi bi-arrow-up-right"></i>
-                        </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="mt-auto pt-4">
-                <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-cream border border-light">
-                    <div class="avatar bg-dark text-white d-inline-flex align-items-center justify-content-center rounded-3">
-                        <i class="bi bi-person-circle"></i>
-                    </div>
-                    <div>
-                        <div class="fw-semibold text-dark"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></div>
-                        <div class="text-muted small"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
+<body class="layout-fluid">
+<div class="page">
+    <aside class="navbar navbar-vertical navbar-expand-md navbar-light">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <h1 class="navbar-brand navbar-brand-autodark">
+                <span class="navbar-brand-text"><?php echo htmlspecialchars($appName, ENT_QUOTES, 'UTF-8'); ?></span>
+            </h1>
+            <div class="navbar-nav flex-row d-md-none">
+                <div class="nav-item">
+                    <div class="nav-link px-0">
+                        <div class="d-flex flex-column text-end">
+                            <span class="fw-semibold"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="text-muted small"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </aside>
-
-    <div class="content-wrapper flex-grow-1">
-        <nav class="navbar app-navbar bg-white sticky-top shadow-sm">
-            <div class="container-fluid">
-                <div>
-                    <div class="text-uppercase small text-muted mb-1">Güncel Finans</div>
-                    <div class="d-flex align-items-center gap-2">
-                        <h1 class="h5 mb-0"><?php echo htmlspecialchars($title ?? 'CRM', ENT_QUOTES, 'UTF-8'); ?></h1>
-                        <span class="badge text-bg-light border">Canlı</span>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="text-end d-none d-md-block">
-                        <div class="fw-semibold text-dark"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></div>
-                        <div class="text-muted small">Hesap · <?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></div>
-                    </div>
+                <div class="nav-item px-2">
                     <form action="/logout" method="POST" class="mb-0">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span>Çıkış</span>
+                        <button type="submit" class="btn btn-outline-primary btn-sm" title="Çıkış">
+                            <span class="ti ti-logout"></span>
                         </button>
                     </form>
                 </div>
             </div>
-        </nav>
+            <div class="collapse navbar-collapse" id="sidebar-menu">
+                <ul class="navbar-nav pt-lg-3">
+                    <?php foreach ($activeModules as $module): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo $module['is_active'] ? 'active' : ''; ?>"
+                               href="<?php echo htmlspecialchars($module['route'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <?php echo htmlspecialchars($module['icon'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                                <span class="nav-link-title">
+                                    <?php echo htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+    </aside>
 
-        <main class="main-content flex-grow-1">
-            <div class="container-fluid py-4">
+    <div class="page-wrapper">
+        <header class="navbar navbar-expand-md navbar-light d-print-none">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-brand d-none-navbar-horizontal pe-0 pe-md-3">
+                    <span class="navbar-brand-text"><?php echo htmlspecialchars($appName, ENT_QUOTES, 'UTF-8'); ?></span>
+                </div>
+                <div class="navbar-nav flex-row order-md-last">
+                    <div class="d-none d-md-flex flex-column text-end me-3">
+                        <span class="fw-semibold"><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span class="text-muted small"><?php echo htmlspecialchars($companyName, ENT_QUOTES, 'UTF-8'); ?></span>
+                    </div>
+                    <div class="nav-item">
+                        <form action="/logout" method="POST" class="mb-0">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                            <button type="submit" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                                <span class="ti ti-logout"></span>
+                                <span>Çıkış</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="collapse navbar-collapse" id="navbar-menu">
+                    <div class="navbar-nav">
+                        <div class="nav-link">
+                            <span class="fw-semibold"><?php echo htmlspecialchars($appName, ENT_QUOTES, 'UTF-8'); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title mb-0"><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <div class="container-xl">
                 <?php if ($actingCompanyMissing): ?>
-                    <div class="alert alert-warning d-flex align-items-center gap-2 rounded-3 mb-3" role="alert">
-                        <div class="fw-semibold">Firma seçilmedi.</div>
-                        <div class="small mb-0">Super Admin olarak ilerlemek için firma seçimi yapın.</div>
+                    <div class="alert alert-warning mb-3" role="alert">
+                        <div class="d-flex flex-column">
+                            <strong>Firma seçilmedi.</strong>
+                            <span>Super Admin olarak ilerlemek için firma seçimi yapın.</span>
+                        </div>
                     </div>
                 <?php endif; ?>
 
-                <div class="content-grid<?php echo $sidePanel ? ' has-side-panel' : ''; ?>">
-                    <div class="main-area">
-                        <?php echo $content ?? ''; ?>
-                    </div>
-                    <?php if ($sidePanel): ?>
-                        <aside class="side-panel bg-white shadow-sm rounded-4">
+                <?php if (!empty($flashMessages)): ?>
+                    <?php foreach ($flashMessages as $type => $message): ?>
+                        <?php
+                        $variant = match ($type) {
+                            'success' => 'success',
+                            'error' => 'danger',
+                            default => 'secondary',
+                        };
+                        ?>
+                        <div class="alert alert-<?php echo $variant; ?> mb-3" role="alert">
+                            <?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
+                <?php if ($sidePanel): ?>
+                    <div class="row">
+                        <div class="col-lg-8 col-xl-9">
+                            <?php echo $content ?? ''; ?>
+                        </div>
+                        <div class="col-lg-4 col-xl-3">
                             <?php echo $sidePanel; ?>
-                        </aside>
-                    <?php endif; ?>
-                </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php echo $content ?? ''; ?>
+                <?php endif; ?>
             </div>
-        </main>
+        </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@tabler/core@latest/dist/js/tabler.min.js"></script>
 </body>
 </html>

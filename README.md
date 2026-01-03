@@ -42,6 +42,11 @@ Bu repo, tek domain üzerinde çalışan firma bazlı (multi-tenant) basit bir C
 - Super admin tüm modülleri görür, firma seçili değilse uyarı banner’ı alır; firma adminleri yalnızca izinli modülleri görür ve `sale.view` izni olan kullanıcılar satış modülünü mutlaka menüde görür.
 - Yetki cache eksik olduğunda `Auth::canAccessModule` doğrudan veritabanından permission sorgulayarak menü-permission tutarsızlıklarını önler.
 
+## UI Foundation: Tabler Admin
+- Ortak admin layout'u Tabler Admin (Bootstrap 5) yapısına taşınmıştır.
+- Tüm ekranlar bu temel layout'u genişletecek; sayfa içerikleri değiştirilmeden yeni shell içinde sunulur.
+- Bu adım tamamen görsel bir reset olup, iş mantığı ve modül akışları aynı kalır.
+
 ## Bootstrap ve Giriş Noktası
 - `public/index.php` tek giriş noktasıdır; uygulamanın tamamı buradan bootstrap edilir.
 - Bootstrap adımları sırasıyla: hata raporlama, minimal autoload, `.env` yükleme, `config/app.php` okuma, çekirdek sınıfları hazır hale getirme, `Auth` oturum başlatma/nesne oluşturma, `Router` başlatma ve dispatch.
